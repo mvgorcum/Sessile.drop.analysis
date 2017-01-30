@@ -12,7 +12,7 @@ Note that the drop volume assume cylindrical symmetry and if there is a needle p
 A GUI using tkinter is available, as well as a standalone script. The standalone script is probably beneficial when using an IDE like spyder.
 
 ## Prerequisites
-The script requires numpy, scipy, matplotlib, imageio, skimage, shapely and tkinter.
+The script requires numpy, scipy, matplotlib, imageio, skimage, shapely, and tkinter.
 
 ## Running the script
 To use the GUI, run GUI_sessile_drop_analysis.py, while the standalone script is sessile_drop_analysis.py.
