@@ -1,8 +1,9 @@
 # Python sessile drop analysis
 Made by Mathijs van Gorcum during his PhD at the Physics of Fluids group of the University of Twente.
 
-Python script to analyse sessile drops by measuring contact angle, drop volume and contact line speed. The script assumes a black and white image of the drop on the surface, where the drop is black, and the background is white.
-This script analyses an image sequence, in the form of an avi, a tiffstack or a folder containing the images and finds the contact angle, drop volume and the contact line speed.
+Python script to analyse sessile drops by measuring contact angle, drop volume and contact line speed.  
+This script analyses an image sequence, in the form of an avi, a tiffstack or a folder containing the images and finds the contact angle, drop volume and the contact line speed.  
+The script assumes a black and white image of the drop on the surface, where the drop is black, and the background is white.  
 The script will ask for the file (or a file, in the case of a folder containing images), a crop (to increase calculation speed, and cut off any irrelevant parts) and a baseline.
 We use a subpixel edge detection, either fast, with a linear interpolation between two pixels around the edge, or slow by fitting an error function around the edge.
 To find the contact line position and the contact angle the detected edge is fitted with a 3rd order polynomial fit, and the slope of the baseline is also used to calculate the contact angles.
