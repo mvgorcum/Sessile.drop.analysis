@@ -25,4 +25,4 @@ The contact line speed is calculated using a linear regression of the contact li
 The non-gui script calculates the speed in pixels/frame, and the volume in pixels^3, so be sure to convert it.
 
 ## License
-This project is licensed under the GPLv2 license - see the LICENSE.md file for details
+This project is licensed under the GPLv3 license - see the LICENSE.md file for details
