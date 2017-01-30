@@ -17,11 +17,11 @@ The script requires numpy, scipy, tkinter, matplotlib, imageio, skimage and shap
 To use the GUI, run GUI_sessile_drop_analysis.py, while the standalone script is sessile_drop_analysis.py.
 
 ## Some details
-The code is written using Python 3.5
-The edge detection uses only a horizontal subpixel correction, and when fitting the errorfunction, 40 pixels left and right of the edge are used.
-To find the contact angle and contact point a polyfit is used, but the fit is made flipping the x and y coordinates, because polyfits don't perform well for vertical lines (ie at contact angles of 90 degrees)
-In the non-gui script, the variable k is used to set the amount of pixels used in the polyfit, by default set at 70.
-The thresh variable is the threshold level, for the fast edge detection the value is used explicitly while for the error function fitting the value is only used to find an approximate edge, to fit the errorfunction around.
+The code is written using Python 3.5  
+The edge detection uses only a horizontal subpixel correction, and when fitting the errorfunction, 40 pixels left and right of the edge are used.  
+To find the contact angle and contact point a polyfit is used, but the fit is made flipping the x and y coordinates, because polyfits don't perform well for vertical lines (ie at contact angles of 90 degrees).  
+In the non-gui script, the variable k is used to set the amount of pixels used in the polyfit, by default set at 70.  
+The thresh variable is the threshold level, for the fast edge detection the value is used explicitly while for the error function fitting the value is only used to find an approximate edge, to fit the errorfunction around.  
 The contact line speed is calculated using a linear regression of the contact line position.  
 The non-gui script calculates the speed in pixels/frame, and the volume in pixels^3, so be sure to convert it.
 
