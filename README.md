@@ -24,5 +24,8 @@ The thresh variable is the threshold level, for the fast edge detection the valu
 The contact line speed is calculated using a linear regression of the contact line position.  
 The non-gui script calculates the speed in pixels/frame, and the volume in pixels^3, so be sure to convert it.
 
+## Contributing
+Feel free to send pull requests, critique my aweful code or point out any issues.
+
 ## License
 This project is licensed under the GPLv3 license - see the LICENSE.md file for details
