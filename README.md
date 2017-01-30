@@ -30,4 +30,4 @@ To use the GUI, run GUI_sessile_drop_analysis.py, while the standalone script is
 Feel free to send pull requests, critique my aweful code or point out any issues.
 
 ## License
-This project is licensed under the GPLv3 license - see the LICENSE.md file for details
+This project is licensed under the GPLv3 license - see the [LICENSE](https://github.com/mvgorcum/Sessile.drop.analysis/blob/master/LICENSE) file for details
