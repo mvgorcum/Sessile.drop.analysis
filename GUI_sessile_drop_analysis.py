@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-GUI for sessile drop analysis. 
+GUI for sessile drop analysis. Uses contact_angle_analysis_function.py, which in turn uses edge_detection.py.
 """
 
 import tkinter as tk
@@ -127,9 +127,7 @@ class StartPage(tk.Frame):
         button2 = ttk.Button(self,text="Go",command=lambda: runscript(self.fasterbool.get(),int(kinput.get()),int(IIinput.get())))
         button2.grid(row=10, column=1)
         
-        #button1 = ttk.Button(self,text="show plot",command=lambda: controller.show_frame(PageTwo))
-        #button1.grid(row=1, column=0)
-        
+       
         label2 = ttk.Label(self, text="Plot x variable", font=LARGE_FONT)
         label2.grid(row=0,column=2,pady=10,padx=10)
         self.typexplot=tk.IntVar()
