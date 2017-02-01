@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Thu Jan  5 13:20:32 2017
-
-@author: GorcumM
+GUI for sessile drop analysis. 
 """
 
 import tkinter as tk
@@ -88,17 +86,6 @@ class CAA(tk.Tk):
 def qf(stringtoprint):
     print(stringtoprint)
         
-#class StartPage(tk.Frame):
-#    def __init__(self, parent, controller):
-#        tk.Frame.__init__(self,parent)
-#        label = ttk.Label(self, text="Start Page", font=LARGE_FONT)
-#        label.pack(pady=10,padx=10)
-#        
-#        button1 = ttk.Button(self,text="visit page 1",command=lambda: controller.show_frame(PageOne))
-#        button1.pack()
-#        button2 = ttk.Button(self,text="visit graph page",command=lambda: controller.show_frame(PageTwo))
-#        button2.pack()
-
         
 class StartPage(tk.Frame):
 
@@ -177,40 +164,14 @@ class StartPage(tk.Frame):
         button3.grid(row=8,column=3)
         #canvas._tkcanvas.pack()
         
-class PageTwo(tk.Frame):
-    def __init__(self,parent,controller):
-        tk.Frame.__init__(self,parent)
-        label = ttk.Label(self, text="Graph page", font=LARGE_FONT)
-        label.grid(row=0,column=0)
-        
-        button3 = ttk.Button(self,text="plot stuff",command=lambda: plotstuff())
-        button3.grid(row=3,column=0)
-        canvas = FigureCanvasTkAgg(fig,self)
-        canvas.show()
-        canvas.get_tk_widget().grid(row=0, column=1)
-        toolbar_frame = tk.Frame(self,parent)
-        toolbar_frame.grid(row=1,column=1)
-        toolbar = NavigationToolbar2TkAgg(canvas, toolbar_frame)
-        toolbar.update()
-        
-        button1 = ttk.Button(self,text="back home",command=lambda: controller.show_frame(StartPage))
-        button1.grid(row=0,column=0)
-
 class PageThree(tk.Frame):
     def main(self):
         self.thetal = np.random.rand(1,1)
     def __init__(self,parent,controller):
         tk.Frame.__init__(self,parent)
-        label = ttk.Label(self, text="Page one", font=LARGE_FONT)
+        label = ttk.Label(self, text="dummy page, just in case I want to use it later", font=LARGE_FONT)
         label.pack(pady=10,padx=10)
-        
-        button1 = ttk.Button(self,text="back home",command=lambda: controller.show_frame(StartPage))
-        button1.pack()
-        self.var1 = np.float()
-        button2 = ttk.Button(self,text="run script",command=self.main)
-        button2.pack()
-        button3 = ttk.Button(self,text="print thetal",command=lambda: print(thetal))
-        button3.pack()
+
         
 app = CAA()
 
