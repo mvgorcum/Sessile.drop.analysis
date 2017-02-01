@@ -71,7 +71,7 @@ class CAA(tk.Tk):
         
         self.frames = {}
         
-        for F in (StartPage, PageTwo, PageThree):
+        for F in (StartPage, PageThree):
             frame = F(container,self)
             self.frames[F]=frame
             frame.grid(row=0, column=0,sticky= "nesw")
