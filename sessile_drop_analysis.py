@@ -24,12 +24,10 @@ k=70
 PO=3
 thresh=70
 
-#userinput for file, for now only movies, but image sequences will be added
+#userinput for file
 root = tk.Tk()
 root.withdraw()
 filename = filedialog.askopenfilename()
-
-#filename='dummy file.avi' #to save time, test file
 
 filext=os.path.splitext(filename)[1]
 
