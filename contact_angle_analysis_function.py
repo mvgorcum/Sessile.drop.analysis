@@ -28,12 +28,11 @@ def analysis(faster_fit,k,II):
     PO=3 #polyfit order for edge fitting to measure contact angle
     thresh=70 #replace with automatic treshold detection at some point
     
-    #userinput for file, for now only movies, but image sequences will be added
+    #userinput for file
     root = tk.Tk()
     root.withdraw()
     filename = filedialog.askopenfilename()
     
-    #filename='dummy file.avi' #to save time, test file
     
     filext=os.path.splitext(filename)[1]
     
