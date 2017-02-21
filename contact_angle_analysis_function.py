@@ -7,7 +7,6 @@ requires skimage, imageio, tkinter, and shapely
 """
 
 def analysis(faster_fit,k,II):
-    print(k)
     import matplotlib.pyplot as plt
     import numpy as np
     import imageio
