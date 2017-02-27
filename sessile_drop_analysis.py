@@ -57,7 +57,7 @@ elif filename.lower().endswith(('.png', '.jpg', '.jpeg')):
 else:
     print('unknown filetype')
 
-    
+
 #function to read a specific frame from the movie, stack, or image sequence
 def getcurrframe(filename,framenr,filetype):
     def movie():
@@ -120,8 +120,8 @@ for framenr in range (0,nframes):
     cropped=np.array(image[round(coords[2]):round(coords[3]),round(coords[0]):round(coords[1])]) #crop frame
     edgeleft, edgeright=edge(cropped,thresh) #find the edge with edge function in edge_detection.py
     baseline=LineString(base) #using shapely we construct baseline
-    rightline=LineString(np.column_stack((edgeright,(range(0,framesize[0]))))) #and the lines of the edges
-    leftline=LineString(np.column_stack((edgeleft,(range(0,framesize[0])))))
+    rightline=LineString(np.column_stack((edgeright,(range(framesize[0]))))) #and the lines of the edges
+    leftline=LineString(np.column_stack((edgeleft,(range(framesize[0])))))
     leftcontact=baseline.intersection(leftline) #we find the intersectionpoint of the baseline with the edge
     rightcontact=baseline.intersection(rightline)
     #Detect small drops that are lower than 'k' pixels
@@ -130,20 +130,20 @@ for framenr in range (0,nframes):
     if any(fitpointsleft==0):
         fitpointsleft=np.delete(fitpointsleft,range(np.argmax(fitpointsleft==0),k))
     #polyfit the edges around the baseline, but flipped, because polyfitting a vertical line is bad
-    leftfit=np.polyfit(range(0,fitpointsleft.shape[0]),fitpointsleft,PO)
+    leftfit=np.polyfit(range(fitpointsleft.shape[0]),fitpointsleft,PO)
     leftvec=np.array([1,leftfit[PO-1]]) #vector for angle calculation
     fitpointsright=edgeright[range(np.int(np.floor(leftcontact.y)),np.int(np.floor(leftcontact.y)-k),-1)]
     if any(fitpointsright==0):
         fitpointsright=np.delete(fitpointsright,range(np.argmax(fitpointsright==0),k))
     #polyfit the edges around the baseline, but flipped, because polyfitting a vertical line is bad
-    rightfit=np.polyfit(range(0,fitpointsright.shape[0]),fitpointsright,PO)
+    rightfit=np.polyfit(range(fitpointsright.shape[0]),fitpointsright,PO)
     rightvec=np.array([1,rightfit[PO-1]]) #vector for angle calculation
     basevec=np.array([-baseslope,1]) #base vector for angle calculation (allows for a sloped basline if the camera was tilted)
-    
+
     #calculate the angles using the dot product.
     thetal[framenr]=np.arccos(np.dot(basevec,leftvec)/(np.sqrt(np.dot(basevec,basevec))*np.sqrt(np.dot(leftvec,leftvec))))*180/np.pi
     thetar[framenr]=180-np.arccos(np.dot(basevec,rightvec)/(np.sqrt(np.dot(basevec,basevec))*np.sqrt(np.dot(rightvec,rightvec))))*180/np.pi
-    
+
     #save the contact point (the point where the polyfit intersects the baseline)
     contactpointright[framenr]=rightfit[PO]
     contactpointleft[framenr]=leftfit[PO]
@@ -154,13 +154,13 @@ for framenr in range (0,nframes):
     #we assume that the radius is constant over the range of the slanted baseline, for small angles this is probably accurate, but for larger angles this is probably wrong.
     baseradius=(edgeright[np.int(min(np.floor(leftcontact.y),np.floor(rightcontact.y)))]-edgeleft[np.int(min(np.floor(leftcontact.y),np.floor(rightcontact.y)))])/2
     dropvolume[framenr]=dropvolume[framenr]+.5*np.pi*np.square(baseradius)*slantedbasediff
-    
+
 #%%
 
 #debug output, showing the image, baseline and the detected edge
 plt.imshow(image[round(coords[2]):round(coords[3]),round(coords[0]):round(coords[1])],cmap='gray',interpolation="nearest")
-plt.plot(edgeleft,range(0,framesize[0]))
-plt.plot(edgeright,range(0,framesize[0]))
+plt.plot(edgeleft,range(framesize[0]))
+plt.plot(edgeright,range(framesize[0]))
 plt.plot([base[0,0],base[1,0]],[base[0,1],base[1,1]])
 plt.show()
 #%%
@@ -175,7 +175,7 @@ if nframes>100:
         leftposfit=np.polyfit(range(-fitsamplesize,fitsamplesize),contactpointleft[range(framenr-fitsamplesize,framenr+fitsamplesize)],1)
         leftspeed[framenr]=leftposfit[0]
         rightspeed[framenr]=rightposfit[0]
-    for fillinrest in range(0,fitsamplesize):
+    for fillinrest in range(fitsamplesize):
         leftspeed[fillinrest]=leftspeed[fitsamplesize]
         rightspeed[fillinrest]=rightspeed[fitsamplesize]
     for fillinrest in range(nframes-fitsamplesize-1,nframes-1):

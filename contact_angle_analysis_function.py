@@ -15,7 +15,7 @@ def analysis(faster_fit,k,II):
         from edge_detection import linear_subpixel_detection as edge
     else:
         from edge_detection import errorfunction_subpixel_detection as edge
-    
+
     from skimage.viewer.canvastools import RectangleTool
     from skimage.viewer.canvastools import LineTool
     from skimage.viewer import ImageViewer
@@ -23,18 +23,18 @@ def analysis(faster_fit,k,II):
     from shapely.geometry import LineString
     import tkinter as tk
     from tkinter import filedialog
-    
+
     PO=3 #polyfit order for edge fitting to measure contact angle
     thresh=70 #replace with automatic treshold detection at some point
-    
+
     #userinput for file
     root = tk.Tk()
     root.withdraw()
     filename = filedialog.askopenfilename()
-    
-    
+
+
     filext=os.path.splitext(filename)[1]
-    
+
     #check the file type
     if filename.lower().endswith('.avi') or filename.lower().endswith('.mp4'):
         filetype=0
@@ -60,8 +60,8 @@ def analysis(faster_fit,k,II):
         nframes=len(filename)
     else:
         print('unknown filetype')
-    
-        
+
+
     #function to read a specific frame from the movie, stack, or image sequence
     def getcurrframe(filename,framenr,filetype):
         def movie():
@@ -80,24 +80,24 @@ def analysis(faster_fit,k,II):
                }
         image=filetypes[filetype]()
         return image
-    
-    
+
+
     image = getcurrframe(filename,0,filetype)
-    
+
     #preallocate crop coordinates, maybe unescecarry?
     coords=[0,0,0,0]
-    
+
     #show the image and ask for a crop from the user, using skimage.viewer canvastools
     viewer = ImageViewer(image)
     rect_tool = RectangleTool(viewer, on_enter=viewer.closeEvent) #actually call the imageviewer
     viewer.show() #don't forget to show it
     coords=np.array(rect_tool.extents)
     coords=np.array(np.around(coords),dtype=int)
-    
+
     #crop the image
     cropped=image[coords[2]:coords[3],coords[0]:coords[1]]
     framesize=cropped.shape
-    
+
     baseinput=np.array([0,0,0,0])
     #userinput for the baseline, on which we'll find the contact angles, using skimage.viewer
     viewer = ImageViewer(cropped)
@@ -108,7 +108,7 @@ def analysis(faster_fit,k,II):
     rightbasepoint=np.argmax([baseinput[0,0],baseinput[1,0]])
     baseslope=np.float(baseinput[rightbasepoint,1]-baseinput[1-rightbasepoint,1])/(baseinput[rightbasepoint,0]-baseinput[1-rightbasepoint,0])
     base=np.array([[0,baseinput[0,1]-baseslope*baseinput[0,0]],[framesize[1],baseslope*framesize[1]+baseinput[0,1]-baseslope*baseinput[0,0]]])
-    
+
     #preallocation of edges, angles and contact points
     edgeleft=np.zeros(framesize[0])
     edgeright=np.zeros(framesize[0])
@@ -119,7 +119,7 @@ def analysis(faster_fit,k,II):
     dropvolume=np.zeros(nframes)
     plt.ion()
     #loop over frames
-    for framenr in range (0,nframes):
+    for framenr in range (nframes):
         image = getcurrframe(filename,framenr,filetype) #get current frame
         cropped=np.array(image[round(coords[2]):round(coords[3]),round(coords[0]):round(coords[1])]) #crop frame
         edgeleft, edgeright=edge(cropped,thresh) #find the edge with edge function in edge_detection.py
@@ -143,7 +143,7 @@ def analysis(faster_fit,k,II):
         rightfit=np.polyfit(range(0,fitpointsright.shape[0]),fitpointsright,PO)
         rightvec=np.array([1,rightfit[PO-1]]) #vector for angle calculation
         basevec=np.array([-baseslope,1]) #base vector for angle calculation (allows for a sloped basline if the camera was tilted)
-        
+
         #calculate the angles using the dot product.
         thetal[framenr]=np.arccos(np.dot(basevec,leftvec)/(np.sqrt(np.dot(basevec,basevec))*np.sqrt(np.dot(leftvec,leftvec))))*180/np.pi
         thetar[framenr]=180-np.arccos(np.dot(basevec,rightvec)/(np.sqrt(np.dot(basevec,basevec))*np.sqrt(np.dot(rightvec,rightvec))))*180/np.pi
@@ -165,9 +165,9 @@ def analysis(faster_fit,k,II):
         #we assume that the radius is constant over the range of the slanted baseline, for small angles this is probably accurate, but for larger angles this is probably wrong.
         baseradius=(edgeright[np.int(min(np.floor(leftcontact.y),np.floor(rightcontact.y)))]-edgeleft[np.int(min(np.floor(leftcontact.y),np.floor(rightcontact.y)))])/2
         dropvolume[framenr]=dropvolume[framenr]+.5*np.pi*np.square(baseradius)*slantedbasediff
-        
+
     #%%
-   
+
     fitsamplesize=3
     leftspeed=np.zeros(nframes)
     rightspeed=np.zeros(nframes)
@@ -183,4 +183,4 @@ def analysis(faster_fit,k,II):
         leftspeed[fillinrest]=leftspeed[nframes-fitsamplesize-1]
         rightspeed[fillinrest]=rightspeed[nframes-fitsamplesize-1]
     plt.close() #close the plot after we're done
-    return thetal, thetar, leftspeed, rightspeed, contactpointleft, contactpointright, dropvolume;  
+    return thetal, thetar, leftspeed, rightspeed, contactpointleft, contactpointright, dropvolume;
