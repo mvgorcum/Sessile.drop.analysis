@@ -11,7 +11,7 @@ def linear_subpixel_detection(image,thresh):
     framesize=image.shape
     edgeleft=np.zeros(framesize[0])
     edgeright=np.zeros(framesize[0])
-    for y in range(0,framesize[0]-1): #edge detection, go line by line on horizontal
+    for y in range(framesize[0]-1): #edge detection, go line by line on horizontal
         edgeleft[y]=np.argmax(image[y,0:framesize[1]]<thresh) #edge detection on pixel scale
         if edgeleft[y]!=0:
             subpxcorr=(thresh-np.float_(image[y,np.int(edgeleft[y]-1)]))/(np.float_(image[y,np.int(edgeleft[y])])-np.float_(image[y,np.int(edgeleft[y]-1)])) #subpixel correction with using corr=(threshold-intensity(edge-1))/(intensity(edge)-intensity(edge-1))
@@ -33,7 +33,7 @@ def errorfunction_subpixel_detection(image,thresh):
     framesize=image.shape
     edgeleft=np.zeros(framesize[0])
     edgeright=np.zeros(framesize[0])
-    for y in range(0,framesize[0]-1): #edge detection, go line by line on horizontal
+    for y in range(framesize[0]-1): #edge detection, go line by line on horizontal
         edgeleft[y]=np.argmax(image[y,0:framesize[1]]<thresh) #edge detection on pixel scale
         if (edgeleft[y]-erffitsize)>=0  and (edgeleft[y]-erffitsize)<=framesize[0]:
             fitparts=np.array(image[y,range(np.int(edgeleft[y])-erffitsize,np.int(edgeleft[y])+erffitsize)]) #take out part of the image around the edge to fit the error function
@@ -50,4 +50,3 @@ def errorfunction_subpixel_detection(image,thresh):
             edgeright[y]=0
 
     return edgeleft, edgeright;
-
