@@ -27,7 +27,7 @@ To use the GUI, run GUI_sessile_drop_analysis.py, while the standalone script is
 * The non-gui script calculates the speed in pixels/frame, and the volume in pixels^3, so be sure to convert it.
 
 ## Contributing
-Feel free to send pull requests, critique my aweful code or point out any issues.
+Feel free to send pull requests, critique my awful code or point out any issues.
 
 ## License
 This project is licensed under the GPLv3 license - see the [LICENSE](https://github.com/mvgorcum/Sessile.drop.analysis/blob/master/LICENSE) file for details
