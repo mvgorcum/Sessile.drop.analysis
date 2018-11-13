@@ -167,20 +167,29 @@ def analysis(faster_fit,k,II):
         dropvolume[framenr]=dropvolume[framenr]+.5*np.pi*np.square(baseradius)*slantedbasediff
 
     #%%
-
     fitsamplesize=3
-    leftspeed=np.zeros(nframes)
-    rightspeed=np.zeros(nframes)
-    for framenr in range(fitsamplesize,nframes-fitsamplesize-1):
-        rightposfit=np.polyfit(range(-fitsamplesize,fitsamplesize),contactpointright[range(framenr-fitsamplesize,framenr+fitsamplesize)],1)
-        leftposfit=np.polyfit(range(-fitsamplesize,fitsamplesize),contactpointleft[range(framenr-fitsamplesize,framenr+fitsamplesize)],1)
-        leftspeed[framenr]=leftposfit[0]
-        rightspeed[framenr]=rightposfit[0]
-    for fillinrest in range(0,fitsamplesize):
-        leftspeed[fillinrest]=leftspeed[fitsamplesize]
-        rightspeed[fillinrest]=rightspeed[fitsamplesize]
-    for fillinrest in range(nframes-fitsamplesize-1,nframes-1):
-        leftspeed[fillinrest]=leftspeed[nframes-fitsamplesize-1]
-        rightspeed[fillinrest]=rightspeed[nframes-fitsamplesize-1]
-    plt.close() #close the plot after we're done
+    if nframes>2*fitsamplesize+1:
+        leftspeed=np.zeros(nframes)
+        rightspeed=np.zeros(nframes)
+        for framenr in range(fitsamplesize,nframes-fitsamplesize-1):
+            rightposfit=np.polyfit(range(-fitsamplesize,fitsamplesize),contactpointright[range(framenr-fitsamplesize,framenr+fitsamplesize)],1)
+            leftposfit=np.polyfit(range(-fitsamplesize,fitsamplesize),contactpointleft[range(framenr-fitsamplesize,framenr+fitsamplesize)],1)
+            leftspeed[framenr]=leftposfit[0]
+            rightspeed[framenr]=rightposfit[0]
+        for fillinrest in range(0,fitsamplesize):
+            leftspeed[fillinrest]=leftspeed[fitsamplesize]
+            rightspeed[fillinrest]=rightspeed[fitsamplesize]
+        for fillinrest in range(nframes-fitsamplesize-1,nframes-1):
+            leftspeed[fillinrest]=leftspeed[nframes-fitsamplesize-1]
+            rightspeed[fillinrest]=rightspeed[nframes-fitsamplesize-1]
+        plt.close() #close the plot after we're done
+    elif nframes>1:
+        for framenr in range(0,nframes-2):
+            leftspeed[framenr]=contactpointleft[framenr+1]-contactpointleft[framenr]
+            rightspeed[framenr]=contactpointright[framenr+1]-contactpointright[framenr]
+        rightspeed[framenr-1]=rightspeed[framenr-2]
+        leftspeed[framenr-1]=leftspeed[framenr-2]
+    else:
+        leftspeed=0
+        rightspeed=0
     return thetal, thetar, leftspeed, rightspeed, contactpointleft, contactpointright, dropvolume;

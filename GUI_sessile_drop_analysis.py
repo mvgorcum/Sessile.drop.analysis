@@ -53,8 +53,11 @@ def plotstuff(typexplot,typeyplot,logxbool,logybool,pxscale,fps):
         y=rightspeed
     else:
         print('no y variable set')
-
-    plt.plot(x,y)
+    if x.size==1 or y.size==1:
+        plt.scatter(x,y)
+    else:
+        plt.plot(x,y)
+    
     if logxbool:
         plt.xscale('log')
     if logybool:
