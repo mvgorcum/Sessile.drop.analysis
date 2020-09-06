@@ -3,6 +3,10 @@ import cv2
 import pyqtgraph as pg
 import sys
 from pathlib import Path
+from edge_detection import linear_subpixel_detection as linedge
+import numpy as np
+from time import sleep
+import threading
 
 pg.setConfigOptions(imageAxisOrder='row-major')
 
@@ -48,10 +52,13 @@ class MainWindow(QtWidgets.QMainWindow):
     
     def CameraToggle(self):
         if self.CameraToggleButton.isChecked():
-            self.CameraCapture()
+            CameraThread = threading.Thread(target=self.CameraCapture)
+            CameraThread.start()
     
     def CameraCapture(self):
+        
         cap = cv2.VideoCapture(0)
+        cv2.waitKey(25)
         if not cap.isOpened(): 
             errorpopup=QtGui.QMessageBox()
             errorpopup.setText('Error opening video stream')
@@ -59,14 +66,18 @@ class MainWindow(QtWidgets.QMainWindow):
             errorpopup.exec_()
             raise Exception('Error opening video stream')
         while(cap.isOpened()):
+    
             ret, org_frame = cap.read()
-            cv2.waitKey(25)
+            self.VideoItem.setImage(cv2.cvtColor(org_frame, cv2.COLOR_BGR2RGB),autoRange=True)
+            if cv2.waitKey(25) & 0xFF == ord('q'):
+                break
             if not self.CameraToggleButton.isChecked():
                 print('stopping video read')
                 cap.release()
                 break
             if self.StartStopButton.isChecked():
                 print('we should analyse the data now')
+            
     
     def VideoRead(self):
         cap = cv2.VideoCapture(self.VideoFile)
@@ -76,7 +87,7 @@ class MainWindow(QtWidgets.QMainWindow):
             if not self.StartStopButton.isChecked():
                 cap.release()
                 break
-            
+            EdgeLeft,EdgeRight=linedge(org_frame)
             self.VideoItem.setImage(cv2.cvtColor(org_frame, cv2.COLOR_BGR2RGB),autoRange=True)
 
     
@@ -91,7 +102,6 @@ if __name__ == '__main__':
     
  
 
-
-        
+]
 
         
