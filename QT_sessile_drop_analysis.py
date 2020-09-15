@@ -5,17 +5,11 @@ import sys
 from pathlib import Path
 from edge_detection import linear_subpixel_detection as linedge
 import numpy as np
-from time import sleep
 import threading
+from time import sleep
 import datetime
 
 pg.setConfigOptions(imageAxisOrder='row-major')
-
-"""
-Project for Mathijs
-"""
-import threading
-import time
 
 
 class FrameSupply:
@@ -171,7 +165,9 @@ class MainWindow(QtWidgets.QMainWindow):
             if not self.StartStopButton.isChecked():
                 cap.release()
                 break
-            EdgeLeft,EdgeRight=linedge(org_frame)
+            gray = cv2.cvtColor(org_frame, cv2.COLOR_BGR2GRAY)
+            thresh, _ =cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU)
+            EdgeLeft,EdgeRight=linedge(gray,thresh)
             self.VideoItem.setImage(cv2.cvtColor(org_frame, cv2.COLOR_BGR2RGB),autoRange=True)
 
     
