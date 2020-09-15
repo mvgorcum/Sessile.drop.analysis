@@ -7,8 +7,99 @@ from edge_detection import linear_subpixel_detection as linedge
 import numpy as np
 from time import sleep
 import threading
+import datetime
 
 pg.setConfigOptions(imageAxisOrder='row-major')
+
+"""
+Project for Mathijs
+"""
+import threading
+import time
+
+
+class FrameSupply:
+    """
+    Main class that can supply frames for further analysis.
+    """
+
+    def __init__(self):
+        self.frameready = False
+        self.running = False
+
+    def run(self):
+        """
+        Start the frame supply. Required to get frames.
+        """
+        pass
+
+    def getlastframe(self):
+        """
+        Get the last frame from the frame supply buffer.
+        Only possible if frameready is true.
+        """
+        pass
+
+
+class OpencvCamera(FrameSupply):
+    """
+    Camera operated using OpenCV
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.framebuffer = []
+        self.framecaptime = []
+        self.imaging_thread = []
+        self.keep_running = False
+        self.is_running = False
+
+    def start(self):
+        """
+        Start the camera
+        """
+        self.keep_running = True
+        self.imaging_thread = threading.Thread(target=self._aquire)
+        self.imaging_thread.start()
+
+    def stop(self):
+        """
+        Stop the camera
+        """
+        self.keep_running = False
+        
+
+    def getlastframe(self):
+        """
+        Get the last frame
+        :return:
+        """
+        if len(self.framebuffer)>=1:
+            return self.framebuffer.pop()
+        else:
+            return -1
+
+    def _aquire(self):
+        self.cap = cv2.VideoCapture(0)
+        cv2.waitKey(25)
+        if self.is_running:
+            print("already running")
+            return
+        self.is_running = True
+        while self.keep_running:
+            if not self.cap.isOpened(): 
+                errorpopup=QtGui.QMessageBox()
+                errorpopup.setText('Error opening video stream')
+                errorpopup.setStandardButtons(QtGui.QMessageBox.Ok)
+                errorpopup.exec_()
+                raise Exception('Error opening video stream')
+            ret, org_frame = self.cap.read()
+            self.framebuffer.append(org_frame)
+            self.framecaptime.append(datetime.datetime.now())
+            cv2.waitKey(25)
+            self.frameready = True
+        self.cap.release()
+        self.is_running = False
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -56,27 +147,20 @@ class MainWindow(QtWidgets.QMainWindow):
             CameraThread.start()
     
     def CameraCapture(self):
-        
-        cap = cv2.VideoCapture(0)
-        cv2.waitKey(25)
-        if not cap.isOpened(): 
-            errorpopup=QtGui.QMessageBox()
-            errorpopup.setText('Error opening video stream')
-            errorpopup.setStandardButtons(QtGui.QMessageBox.Ok)
-            errorpopup.exec_()
-            raise Exception('Error opening video stream')
-        while(cap.isOpened()):
-    
-            ret, org_frame = cap.read()
-            self.VideoItem.setImage(cv2.cvtColor(org_frame, cv2.COLOR_BGR2RGB),autoRange=True)
-            if cv2.waitKey(25) & 0xFF == ord('q'):
-                break
+        cameraobject=OpencvCamera()
+        cameraobject.start()
+        sleep(1)
+
+        while True:
+            org_frame = cameraobject.getlastframe()
+            if not np.all(org_frame==-1):
+                self.VideoItem.setImage(cv2.cvtColor(org_frame, cv2.COLOR_BGR2RGB),autoRange=True)
+                if self.StartStopButton.isChecked():
+                    print('we should analyse the data now')
             if not self.CameraToggleButton.isChecked():
-                print('stopping video read')
-                cap.release()
+                cameraobject.stop()
                 break
-            if self.StartStopButton.isChecked():
-                print('we should analyse the data now')
+
             
     
     def VideoRead(self):
@@ -100,8 +184,3 @@ def main():
 if __name__ == '__main__':         
     main()
     
- 
-
-]
-
-        
