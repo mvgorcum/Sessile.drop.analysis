@@ -19,7 +19,7 @@ class FrameSupply:
 
     def __init__(self):
         self.frameready = False
-        self.running = False
+        self.is_running = False
 
     def run(self):
         """
@@ -145,6 +145,8 @@ class MainWindow(QtWidgets.QMainWindow):
         VideoFile, _ = QtGui.QFileDialog.getOpenFileName(self,'Open file', home_dir)  
         self.FrameSource=OpencvReadVideo(VideoFile)
         self.FrameSource.start()
+        self.VideoItem.setImage(cv2.cvtColor(self.FrameSource.getnextframe(), cv2.COLOR_BGR2RGB),autoRange=True)
+        
         
 #        FirstFrameCap = cv2.VideoCapture(VideoFile)
 #        Success, FirstFrame = FirstFrameCap.read()
