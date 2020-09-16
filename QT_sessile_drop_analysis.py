@@ -189,7 +189,6 @@ class MainWindow(QtWidgets.QMainWindow):
     def RunAnalysis(self):
         while self.StartStopButton.isChecked():
             org_frame = self.FrameSource.getnextframe()
-            cv2.waitKey(25)
             if not np.all(org_frame==-1):
                 gray = cv2.cvtColor(org_frame, cv2.COLOR_BGR2GRAY)
                 thresh, _ =cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU)
