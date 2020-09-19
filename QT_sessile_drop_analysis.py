@@ -19,7 +19,7 @@ class FrameSupply:
 
     def __init__(self):
         self.frameready = False
-        self.running = False
+        self.is_running = False
 
     def run(self):
         """
@@ -27,13 +27,41 @@ class FrameSupply:
         """
         pass
 
-    def getlastframe(self):
+    def getnextframe(self):
         """
         Get the last frame from the frame supply buffer.
         Only possible if frameready is true.
         """
         pass
 
+class OpencvReadVideo(FrameSupply):
+    """
+    Read videofile with OpenCV
+    """
+    def __init__(self,VideoFile):
+        super().__init__()
+        self.VideoFile=VideoFile
+        self.is_running = False
+    
+    def start(self):
+        self.cap = cv2.VideoCapture(self.VideoFile)
+        self.is_running = True
+        
+        
+    def stop(self):
+        """
+        Stop the feed
+        """
+        self.cap.release()
+        
+    def getnextframe(self):
+        ret, org_frame = self.cap.read()
+        if ret:
+            return org_frame
+        else:
+            self.is_running=False
+            self.stop()
+            return -1
 
 class OpencvCamera(FrameSupply):
     """
@@ -63,7 +91,7 @@ class OpencvCamera(FrameSupply):
         self.keep_running = False
         
 
-    def getlastframe(self):
+    def getnextframe(self):
         """
         Get the last frame
         :return:
@@ -113,31 +141,35 @@ class MainWindow(QtWidgets.QMainWindow):
         self.RightEdgeItem=pg.PlotCurveItem()
         self.VideoWidget.addItem(self.LeftEdgeItem)
         self.VideoWidget.addItem(self.RightEdgeItem)
-        
+        self.FrameSource=FrameSupply()
+
     def openCall(self):
+        if self.FrameSource.is_running:
+            self.FrameSource.stop()
         home_dir = '/data/github/Sessile.drop.analysis/Sample/'
         VideoFile, _ = QtGui.QFileDialog.getOpenFileName(self,'Open file', home_dir)  
-        FirstFrameCap = cv2.VideoCapture(VideoFile)
-        Success, FirstFrame = FirstFrameCap.read()
-        if Success:
-            self.VideoItem.setImage(cv2.cvtColor(FirstFrame, cv2.COLOR_BGR2RGB),autoRange=True)
-            self.ReadVideoFile=True
-            FirstFrameCap.release()
-            self.VideoFile=VideoFile
+        self.FrameSource=OpencvReadVideo(VideoFile)
+        self.FrameSource.start()
+        self.VideoItem.setImage(cv2.cvtColor(self.FrameSource.getnextframe(), cv2.COLOR_BGR2RGB),autoRange=True)
+        
+        
+#        FirstFrameCap = cv2.VideoCapture(VideoFile)
+#        Success, FirstFrame = FirstFrameCap.read()
+#        if Success:
+#            self.VideoItem.setImage(cv2.cvtColor(FirstFrame, cv2.COLOR_BGR2RGB),autoRange=True)
+#            self.ReadVideoFile=True
+#            FirstFrameCap.release()
+#            self.VideoFile=VideoFile
     
     def StartStop(self):
+        
         # Check if camera toggle is on, read live feed if it is
-        if self.CameraToggleButton.isChecked():
-            if self.StartStopButton.isChecked():
-                self.StartStopButton.setText('Stop Measurement')
-            elif not self.StartStopButton.isChecked():
-                self.StartStopButton.setText('Start Measurement')
-        elif not self.CameraToggleButton.isChecked():  
-            if self.StartStopButton.isChecked():
-                self.StartStopButton.setText('Stop Measurement')
-                self.VideoRead()
-            elif not self.StartStopButton.isChecked():
-                self.StartStopButton.setText('Start Measurement')
+        if self.StartStopButton.isChecked():
+            self.StartStopButton.setText('Stop Measurement')
+            AnalysisThread = threading.Thread(target=self.RunAnalysis)
+            AnalysisThread.start()
+        elif not self.StartStopButton.isChecked():
+            self.StartStopButton.setText('Start Measurement')
     
     def CameraToggle(self):
         if self.CameraToggleButton.isChecked():
@@ -145,36 +177,33 @@ class MainWindow(QtWidgets.QMainWindow):
             CameraThread.start()
     
     def CameraCapture(self):
-        cameraobject=OpencvCamera()
-        cameraobject.start()
-        sleep(1)
+        self.FrameSource=OpencvCamera()
+        self.FrameSource.start()
 
         while True:
-            org_frame = cameraobject.getlastframe()
-            if not np.all(org_frame==-1):
-                self.VideoItem.setImage(cv2.cvtColor(org_frame, cv2.COLOR_BGR2RGB),autoRange=True)
-                if self.StartStopButton.isChecked():
-                    print('we should analyse the data now')
+            if not self.StartStopButton.isChecked():
+                org_frame = self.FrameSource.getnextframe()
+                if not np.all(org_frame==-1):
+                    self.VideoItem.setImage(cv2.cvtColor(org_frame, cv2.COLOR_BGR2RGB),autoRange=True)
+            else:
+                sleep(0.5)
             if not self.CameraToggleButton.isChecked():
-                cameraobject.stop()
+                self.FrameSource.stop()
                 break
 
             
     
-    def VideoRead(self):
-        cap = cv2.VideoCapture(self.VideoFile)
-        while(cap.isOpened()):
-            ret, org_frame = cap.read()
-            cv2.waitKey(25)
-            if not self.StartStopButton.isChecked():
-                cap.release()
-                break
-            gray = cv2.cvtColor(org_frame, cv2.COLOR_BGR2GRAY)
-            thresh, _ =cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU)
-            EdgeLeft,EdgeRight=linedge(gray,thresh)
-            self.LeftEdgeItem.setData(EdgeLeft+1,np.arange(0,len(EdgeLeft)),pen='r')
-            self.RightEdgeItem.setData(EdgeRight,np.arange(0,len(EdgeRight)),pen='r')
-            self.VideoItem.setImage(cv2.cvtColor(org_frame, cv2.COLOR_BGR2RGB),autoRange=True)
+    def RunAnalysis(self):
+        while self.StartStopButton.isChecked():
+            org_frame = self.FrameSource.getnextframe()
+            if not np.all(org_frame==-1):
+                gray = cv2.cvtColor(org_frame, cv2.COLOR_BGR2GRAY)
+                thresh, _ =cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU)
+                EdgeLeft,EdgeRight=linedge(gray,thresh)
+                self.LeftEdgeItem.setData(EdgeLeft+1,np.arange(0,len(EdgeLeft)),pen='r')
+                self.RightEdgeItem.setData(EdgeRight,np.arange(0,len(EdgeRight)),pen='r')
+                self.VideoItem.setImage(cv2.cvtColor(org_frame, cv2.COLOR_BGR2RGB),autoRange=True)
+
 
     
 def main():
