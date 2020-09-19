@@ -74,19 +74,20 @@ class OpencvCamera(FrameSupply):
             return -1
 
     def _aquire(self):
-        self.cap = cv2.VideoCapture(0)
-        cv2.waitKey(25)
         if self.is_running:
             print("already running")
             return
         self.is_running = True
+        self.cap = cv2.VideoCapture(0)
+        if not self.cap.isOpened(): 
+            errorpopup=QtGui.QMessageBox()
+            errorpopup.setText('Error opening video stream')
+            errorpopup.setStandardButtons(QtGui.QMessageBox.Ok)
+            errorpopup.exec_()
+            self.cap.release()
+            self.is_running = False
+            self.keep_running = False
         while self.keep_running:
-            if not self.cap.isOpened(): 
-                errorpopup=QtGui.QMessageBox()
-                errorpopup.setText('Error opening video stream')
-                errorpopup.setStandardButtons(QtGui.QMessageBox.Ok)
-                errorpopup.exec_()
-                raise Exception('Error opening video stream')
             ret, org_frame = self.cap.read()
             self.framebuffer.append(org_frame)
             self.framecaptime.append(datetime.datetime.now())
@@ -108,8 +109,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actionOpen.triggered.connect(self.openCall)
         self.StartStopButton.clicked.connect(self.StartStop)
         self.CameraToggleButton.clicked.connect(self.CameraToggle)
+        self.LeftEdgeItem=pg.PlotCurveItem()
+        self.RightEdgeItem=pg.PlotCurveItem()
+        self.VideoWidget.addItem(self.LeftEdgeItem)
+        self.VideoWidget.addItem(self.RightEdgeItem)
         
-
     def openCall(self):
         home_dir = '/data/github/Sessile.drop.analysis/Sample/'
         VideoFile, _ = QtGui.QFileDialog.getOpenFileName(self,'Open file', home_dir)  
@@ -168,6 +172,8 @@ class MainWindow(QtWidgets.QMainWindow):
             gray = cv2.cvtColor(org_frame, cv2.COLOR_BGR2GRAY)
             thresh, _ =cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU)
             EdgeLeft,EdgeRight=linedge(gray,thresh)
+            self.LeftEdgeItem.setData(EdgeLeft+1,np.arange(0,len(EdgeLeft)),pen='r')
+            self.RightEdgeItem.setData(EdgeRight,np.arange(0,len(EdgeRight)),pen='r')
             self.VideoItem.setImage(cv2.cvtColor(org_frame, cv2.COLOR_BGR2RGB),autoRange=True)
 
     
