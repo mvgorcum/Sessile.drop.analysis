@@ -1,4 +1,6 @@
 from PyQt5 import QtWidgets, uic, QtGui
+from PyQt5.QtCore import pyqtSignal
+
 import cv2
 import pyqtgraph as pg
 import sys
@@ -126,10 +128,11 @@ class OpencvCamera(FrameSupply):
 
 
 class MainWindow(QtWidgets.QMainWindow):
-
+    updateVideo = pyqtSignal(np.ndarray)
+    updateLeftEdge = pyqtSignal(np.ndarray,np.ndarray)
+    updateRightEdge = pyqtSignal(np.ndarray,np.ndarray)
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
-
 
         uic.loadUi('Mainwindow.ui', self)
         self.VideoItem = pg.ImageItem()
@@ -137,11 +140,16 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actionOpen.triggered.connect(self.openCall)
         self.StartStopButton.clicked.connect(self.StartStop)
         self.CameraToggleButton.clicked.connect(self.CameraToggle)
-        self.LeftEdgeItem=pg.PlotCurveItem()
-        self.RightEdgeItem=pg.PlotCurveItem()
+        self.LeftEdgeItem=pg.PlotCurveItem(pen='r')
+        self.RightEdgeItem=pg.PlotCurveItem(pen='r')
         self.VideoWidget.addItem(self.LeftEdgeItem)
         self.VideoWidget.addItem(self.RightEdgeItem)
         self.FrameSource=FrameSupply()
+        self.updateVideo.connect(self.VideoItem.setImage)
+        self.updateLeftEdge.connect(self.LeftEdgeItem.setData)
+        self.updateRightEdge.connect(self.RightEdgeItem.setData)
+        
+        
 
     def openCall(self):
         if self.FrameSource.is_running:
@@ -153,16 +161,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.VideoItem.setImage(cv2.cvtColor(self.FrameSource.getnextframe(), cv2.COLOR_BGR2RGB),autoRange=True)
         
         
-#        FirstFrameCap = cv2.VideoCapture(VideoFile)
-#        Success, FirstFrame = FirstFrameCap.read()
-#        if Success:
-#            self.VideoItem.setImage(cv2.cvtColor(FirstFrame, cv2.COLOR_BGR2RGB),autoRange=True)
-#            self.ReadVideoFile=True
-#            FirstFrameCap.release()
-#            self.VideoFile=VideoFile
-    
     def StartStop(self):
-        
         # Check if camera toggle is on, read live feed if it is
         if self.StartStopButton.isChecked():
             self.StartStopButton.setText('Stop Measurement')
@@ -179,7 +178,6 @@ class MainWindow(QtWidgets.QMainWindow):
     def CameraCapture(self):
         self.FrameSource=OpencvCamera()
         self.FrameSource.start()
-
         while True:
             if not self.StartStopButton.isChecked():
                 org_frame = self.FrameSource.getnextframe()
@@ -190,8 +188,6 @@ class MainWindow(QtWidgets.QMainWindow):
             if not self.CameraToggleButton.isChecked():
                 self.FrameSource.stop()
                 break
-
-            
     
     def RunAnalysis(self):
         while self.StartStopButton.isChecked():
@@ -200,9 +196,9 @@ class MainWindow(QtWidgets.QMainWindow):
                 gray = cv2.cvtColor(org_frame, cv2.COLOR_BGR2GRAY)
                 thresh, _ =cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU)
                 EdgeLeft,EdgeRight=linedge(gray,thresh)
-                self.LeftEdgeItem.setData(EdgeLeft+1,np.arange(0,len(EdgeLeft)),pen='r')
-                self.RightEdgeItem.setData(EdgeRight,np.arange(0,len(EdgeRight)),pen='r')
-                self.VideoItem.setImage(cv2.cvtColor(org_frame, cv2.COLOR_BGR2RGB),autoRange=True)
+                self.updateVideo.emit(cv2.cvtColor(org_frame, cv2.COLOR_BGR2RGB))
+                self.updateLeftEdge.emit(EdgeLeft+1,np.arange(0,len(EdgeLeft)))
+                self.updateRightEdge.emit(EdgeRight,np.arange(0,len(EdgeRight)))
 
 
     
