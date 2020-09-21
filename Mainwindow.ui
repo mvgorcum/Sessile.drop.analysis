@@ -31,7 +31,14 @@
     </property>
     <layout class="QGridLayout" name="gridLayout">
      <item row="0" column="2" rowspan="3">
-      <widget class="PlotWidget" name="PlotWidget" native="true"/>
+      <widget class="PlotWidget" name="PlotWidget" native="true">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+      </widget>
      </item>
      <item row="0" column="0">
       <widget class="QPushButton" name="StartStopButton">
@@ -50,7 +57,14 @@
       </widget>
      </item>
      <item row="0" column="1" rowspan="3">
-      <widget class="GraphicsView" name="VideoWidget" native="true"/>
+      <widget class="GraphicsView" name="VideoWidget" native="true">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+      </widget>
      </item>
      <item row="1" column="0">
       <widget class="QPushButton" name="CameraToggleButton">

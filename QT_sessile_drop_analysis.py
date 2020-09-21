@@ -131,25 +131,26 @@ class MainWindow(QtWidgets.QMainWindow):
     updateVideo = pyqtSignal(np.ndarray)
     updateLeftEdge = pyqtSignal(np.ndarray,np.ndarray)
     updateRightEdge = pyqtSignal(np.ndarray,np.ndarray)
+    
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
-
         uic.loadUi('Mainwindow.ui', self)
-        self.VideoItem = pg.ImageItem()
-        self.VideoWidget.addItem(self.VideoItem)
-        self.actionOpen.triggered.connect(self.openCall)
-        self.StartStopButton.clicked.connect(self.StartStop)
-        self.CameraToggleButton.clicked.connect(self.CameraToggle)
+        
+        self.VideoItem = pg.ImageView(parent=self.VideoWidget)
+        #self.VideoWidget.addItem(self.VideoItem)
         self.LeftEdgeItem=pg.PlotCurveItem(pen='r')
         self.RightEdgeItem=pg.PlotCurveItem(pen='r')
-        self.VideoWidget.addItem(self.LeftEdgeItem)
-        self.VideoWidget.addItem(self.RightEdgeItem)
-        self.FrameSource=FrameSupply()
+        self.VideoItem.addItem(self.LeftEdgeItem)
+        self.VideoItem.addItem(self.RightEdgeItem)
         self.updateVideo.connect(self.VideoItem.setImage)
         self.updateLeftEdge.connect(self.LeftEdgeItem.setData)
         self.updateRightEdge.connect(self.RightEdgeItem.setData)
         
+        self.actionOpen.triggered.connect(self.openCall)
+        self.StartStopButton.clicked.connect(self.StartStop)
+        self.CameraToggleButton.clicked.connect(self.CameraToggle)
         
+        self.FrameSource=FrameSupply()
 
     def openCall(self):
         if self.FrameSource.is_running:
@@ -197,8 +198,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 thresh, _ =cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU)
                 EdgeLeft,EdgeRight=linedge(gray,thresh)
                 self.updateVideo.emit(cv2.cvtColor(org_frame, cv2.COLOR_BGR2RGB))
-                self.updateLeftEdge.emit(EdgeLeft+1,np.arange(0,len(EdgeLeft)))
-                self.updateRightEdge.emit(EdgeRight,np.arange(0,len(EdgeRight)))
+                self.updateLeftEdge.emit(EdgeLeft+0.5,np.arange(0,len(EdgeLeft))+0.5)
+                self.updateRightEdge.emit(EdgeRight+0.5,np.arange(0,len(EdgeRight))+0.5)
 
 
     
