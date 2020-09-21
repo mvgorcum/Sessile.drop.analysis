@@ -137,14 +137,16 @@ class MainWindow(QtWidgets.QMainWindow):
         uic.loadUi('Mainwindow.ui', self)
         
         self.VideoItem = pg.ImageView(parent=self.VideoWidget)
-        #self.VideoWidget.addItem(self.VideoItem)
-        self.LeftEdgeItem=pg.PlotCurveItem(pen='r')
-        self.RightEdgeItem=pg.PlotCurveItem(pen='r')
+        self.LeftEdgeItem=pg.PlotCurveItem(pen='c')
+        self.RightEdgeItem=pg.PlotCurveItem(pen='c')
         self.VideoItem.addItem(self.LeftEdgeItem)
         self.VideoItem.addItem(self.RightEdgeItem)
         self.updateVideo.connect(self.VideoItem.setImage)
         self.updateLeftEdge.connect(self.LeftEdgeItem.setData)
         self.updateRightEdge.connect(self.RightEdgeItem.setData)
+        
+        self.BaseLine=pg.LineSegmentROI([(10,10),(100,10)],pen='r')
+        self.VideoItem.addItem(self.BaseLine)
         
         self.actionOpen.triggered.connect(self.openCall)
         self.StartStopButton.clicked.connect(self.StartStop)
