@@ -180,9 +180,9 @@ class MainWindow(QtWidgets.QMainWindow):
     
     def CameraCapture(self):
         while self.CameraToggleButton.isChecked():
-            #if self.StartStopButton.isChecked():
-            #    sleep(0.5)
-            #else:
+            if self.StartStopButton.isChecked():
+                sleep(0.5)
+            else:
                 org_frame = self.FrameSource.getnextframe()
                 if not np.all(org_frame==-1):
                     self.updateVideo.emit(cv2.cvtColor(org_frame, cv2.COLOR_BGR2RGB))
