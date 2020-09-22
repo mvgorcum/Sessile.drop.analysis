@@ -121,7 +121,6 @@ class OpencvCamera(FrameSupply):
             ret, org_frame = self.cap.read()
             self.framebuffer.append(org_frame)
             self.framecaptime.append(datetime.datetime.now())
-            cv2.waitKey(25)
             self.frameready = True
         self.cap.release()
         self.is_running = False
@@ -165,7 +164,6 @@ class MainWindow(QtWidgets.QMainWindow):
         
         
     def StartStop(self):
-        # Check if camera toggle is on, read live feed if it is
         if self.StartStopButton.isChecked():
             self.StartStopButton.setText('Stop Measurement')
             AnalysisThread = threading.Thread(target=self.RunAnalysis)
@@ -175,22 +173,20 @@ class MainWindow(QtWidgets.QMainWindow):
     
     def CameraToggle(self):
         if self.CameraToggleButton.isChecked():
+            self.FrameSource=OpencvCamera()
+            self.FrameSource.start()
             CameraThread = threading.Thread(target=self.CameraCapture)
             CameraThread.start()
     
     def CameraCapture(self):
-        self.FrameSource=OpencvCamera()
-        self.FrameSource.start()
-        while True:
-            if not self.StartStopButton.isChecked():
+        while self.CameraToggleButton.isChecked():
+            #if self.StartStopButton.isChecked():
+            #    sleep(0.5)
+            #else:
                 org_frame = self.FrameSource.getnextframe()
                 if not np.all(org_frame==-1):
-                    self.VideoItem.setImage(cv2.cvtColor(org_frame, cv2.COLOR_BGR2RGB),autoRange=True)
-            else:
-                sleep(0.5)
-            if not self.CameraToggleButton.isChecked():
-                self.FrameSource.stop()
-                break
+                    self.updateVideo.emit(cv2.cvtColor(org_frame, cv2.COLOR_BGR2RGB))
+        self.FrameSource.stop()
     
     def RunAnalysis(self):
         while self.StartStopButton.isChecked():
