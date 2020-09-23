@@ -35,6 +35,11 @@ class FrameSupply:
         Only possible if frameready is true.
         """
         pass
+    def getframesize(self):
+        """
+        Get the width and height of the frame.
+        """
+        pass
 
 class OpencvReadVideo(FrameSupply):
     """
@@ -48,7 +53,6 @@ class OpencvReadVideo(FrameSupply):
     def start(self):
         self.cap = cv2.VideoCapture(self.VideoFile)
         self.is_running = True
-        
         
     def stop(self):
         """
@@ -64,6 +68,9 @@ class OpencvReadVideo(FrameSupply):
             self.is_running=False
             self.stop()
             return -1
+        
+    def getframesize(self):
+        return self.cap.get(cv2.CAP_PROP_FRAME_WIDTH),self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
 
 class OpencvCamera(FrameSupply):
     """
@@ -103,6 +110,9 @@ class OpencvCamera(FrameSupply):
             return self.framebuffer.pop(0)
         else:
             return -1
+        
+    def getframesize(self):
+        return self.cap.get(cv2.CAP_PROP_FRAME_WIDTH),self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
 
     def _aquire(self):
         if self.is_running:
@@ -125,6 +135,7 @@ class OpencvCamera(FrameSupply):
             self.frameready = True
         self.cap.release()
         self.is_running = False
+        
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -145,8 +156,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.updateLeftEdge.connect(self.LeftEdgeItem.setData)
         self.updateRightEdge.connect(self.RightEdgeItem.setData)
         
-        self.BaseLine=pg.LineSegmentROI([(10,10),(100,10)],pen='r')
+        self.BaseLine=pg.LineSegmentROI([(15,90),(100,90)],pen='r')
+        self.CropRoi=pg.RectROI([10,10],[110,110])
+        self.CropRoi.addScaleHandle([0,0],[1,1])
         self.VideoItem.addItem(self.BaseLine)
+        self.VideoItem.addItem(self.CropRoi)
         
         self.actionOpen.triggered.connect(self.openCall)
         self.StartStopButton.clicked.connect(self.StartStop)
@@ -161,7 +175,12 @@ class MainWindow(QtWidgets.QMainWindow):
         VideoFile, _ = QtGui.QFileDialog.getOpenFileName(self,'Open file', home_dir)  
         self.FrameSource=OpencvReadVideo(VideoFile)
         self.FrameSource.start()
+        FrameWidth,FrameHeight=self.FrameSource.getframesize()
+        self.CropRoi.setPos([FrameWidth*.1,FrameHeight*.1])
+        self.CropRoi.setSize([FrameWidth*.8,FrameHeight*.8])
+        self.BaseLine.setPos([FrameWidth*.2,FrameHeight*.7])
         self.VideoItem.setImage(cv2.cvtColor(self.FrameSource.getnextframe(), cv2.COLOR_BGR2RGB),autoRange=True)
+        
         
         
     def StartStop(self):
@@ -176,6 +195,10 @@ class MainWindow(QtWidgets.QMainWindow):
         if self.CameraToggleButton.isChecked():
             self.FrameSource=OpencvCamera()
             self.FrameSource.start()
+            FrameWidth,FrameHeight=self.FrameSource.getframesize()
+            self.CropRoi.setPos([FrameWidth*.1,FrameHeight*.1])
+            self.CropRoi.setSize([FrameWidth*.8,FrameHeight*.8])
+            self.BaseLine.setPos([FrameWidth*.2,FrameHeight*.7])
             CameraThread = threading.Thread(target=self.CameraCapture)
             CameraThread.start()
     
@@ -198,6 +221,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 gray = cv2.cvtColor(org_frame, cv2.COLOR_BGR2GRAY)
                 thresh, _ =cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU)
                 EdgeLeft,EdgeRight=linedge(gray,thresh)
+                
                 self.updateVideo.emit(cv2.cvtColor(org_frame, cv2.COLOR_BGR2RGB))
                 self.updateLeftEdge.emit(EdgeLeft+0.5,np.arange(0,len(EdgeLeft))+0.5)
                 self.updateRightEdge.emit(EdgeRight+0.5,np.arange(0,len(EdgeRight))+0.5)
