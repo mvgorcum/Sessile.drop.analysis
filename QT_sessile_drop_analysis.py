@@ -99,7 +99,8 @@ class OpencvCamera(FrameSupply):
         :return:
         """
         if len(self.framebuffer)>=1:
-            return self.framebuffer.pop()
+            
+            return self.framebuffer.pop(0)
         else:
             return -1
 
@@ -186,6 +187,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 org_frame = self.FrameSource.getnextframe()
                 if not np.all(org_frame==-1):
                     self.updateVideo.emit(cv2.cvtColor(org_frame, cv2.COLOR_BGR2RGB))
+                else:
+                    sleep(0.0001)
         self.FrameSource.stop()
     
     def RunAnalysis(self):
@@ -198,6 +201,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.updateVideo.emit(cv2.cvtColor(org_frame, cv2.COLOR_BGR2RGB))
                 self.updateLeftEdge.emit(EdgeLeft+0.5,np.arange(0,len(EdgeLeft))+0.5)
                 self.updateRightEdge.emit(EdgeRight+0.5,np.arange(0,len(EdgeRight))+0.5)
+            else:
+                sleep(0.001)
 
 
     
