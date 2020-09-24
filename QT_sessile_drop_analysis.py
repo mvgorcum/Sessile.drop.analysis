@@ -112,7 +112,11 @@ class OpencvCamera(FrameSupply):
             return -1
         
     def getframesize(self):
-        return self.cap.get(cv2.CAP_PROP_FRAME_WIDTH),self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+        if not 'self.cap' in locals():
+            sleep(0.5)
+            return self.cap.get(cv2.CAP_PROP_FRAME_WIDTH),self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+        else:
+            return self.cap.get(cv2.CAP_PROP_FRAME_WIDTH),self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
 
     def _aquire(self):
         if self.is_running:
