@@ -6,7 +6,9 @@ import pyqtgraph as pg
 import sys
 from pathlib import Path
 from edge_detection import linear_subpixel_detection as linedge
+from edge_analysis import analysis
 import numpy as np
+import pandas as pd
 import threading
 from time import sleep
 import datetime
@@ -63,8 +65,9 @@ class OpencvReadVideo(FrameSupply):
         
     def getnextframe(self):
         ret, org_frame = self.cap.read()
+        framenumber = self.cap.get(cv2.CAP_PROP_POS_FRAMES)
         if ret:
-            return org_frame
+            return org_frame,framenumber
         else:
             self.is_running=False
             self.stop()
@@ -109,7 +112,7 @@ class OpencvCamera(FrameSupply):
         """
         if len(self.framebuffer)>=1:
             
-            return self.framebuffer.pop(0)
+            return self.framebuffer.pop(0),self.framecaptime.pop(0)
         else:
             return -1
         
@@ -147,7 +150,8 @@ class MainWindow(QtWidgets.QMainWindow):
     updateVideo = pyqtSignal(np.ndarray)
     updateLeftEdge = pyqtSignal(np.ndarray,np.ndarray)
     updateRightEdge = pyqtSignal(np.ndarray,np.ndarray)
-    
+    updatePlotLeft = pyqtSignal(np.ndarray,np.ndarray)
+    updatePlotRight = pyqtSignal(np.ndarray,np.ndarray)
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
         uic.loadUi('Mainwindow.ui', self)
@@ -161,6 +165,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.updateLeftEdge.connect(self.LeftEdgeItem.setData)
         self.updateRightEdge.connect(self.RightEdgeItem.setData)
         
+        self.ThetaLeftPlot=pg.PlotCurveItem()
+        self.ThetaRightPlot=pg.PlotCurveItem()
+        self.PlotItem=self.PlotWidget.getPlotItem()
+        self.PlotItem.addItem(self.ThetaLeftPlot)
+        self.PlotItem.addItem(self.ThetaRightPlot)
+        self.updatePlotLeft.connect(self.ThetaLeftPlot.setData)
+        self.updatePlotRight.connect(self.ThetaRightPlot.setData)
+        
         self.BaseLine=pg.LineSegmentROI([(15,90),(100,90)],pen='r')
         self.CropRoi=pg.RectROI([10,10],[110,110])
         self.CropRoi.addScaleHandle([0,0],[1,1])
@@ -172,6 +184,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.CameraToggleButton.clicked.connect(self.CameraToggle)
         
         self.FrameSource=FrameSupply()
+        self.MeasurementResult=pd.DataFrame(columns=['thetaleft', 'thetaright', 'contactpointleft','contactpointright','volume','time'])
 
     def openCall(self):
         if self.FrameSource.is_running:
@@ -183,8 +196,9 @@ class MainWindow(QtWidgets.QMainWindow):
         FrameWidth,FrameHeight=self.FrameSource.getframesize()
         self.CropRoi.setPos([FrameWidth*.1,FrameHeight*.1])
         self.CropRoi.setSize([FrameWidth*.8,FrameHeight*.8])
-        self.BaseLine.setPos([FrameWidth*.2,FrameHeight*.7])
-        self.VideoItem.setImage(cv2.cvtColor(self.FrameSource.getnextframe(), cv2.COLOR_BGR2RGB),autoRange=True)
+        #self.BaseLine.setPos([FrameWidth*.2,FrameHeight*.7])
+        firstframe,_=self.FrameSource.getnextframe()
+        self.VideoItem.setImage(cv2.cvtColor(firstframe, cv2.COLOR_BGR2RGB),autoRange=True)
         
         
         
@@ -221,29 +235,34 @@ class MainWindow(QtWidgets.QMainWindow):
     
     def RunAnalysis(self):
         while self.StartStopButton.isChecked():
-            org_frame = self.FrameSource.getnextframe()
+            org_frame,framecaptime = self.FrameSource.getnextframe()
             if not np.all(org_frame==-1):
+                #get crop and save coordinate transformation
                 cropcoords=self.CropRoi.getArraySlice(org_frame, self.VideoItem.getImageItem(), returnSlice=False)
+                verticalCropOffset=0.5+cropcoords[0][0][0]
+                horizontalCropOffset=0.5+cropcoords[0][1][0]
                 cropped=org_frame[cropcoords[0][0][0]:cropcoords[0][0][1],cropcoords[0][1][0]:cropcoords[0][1][1],:]
-                baselineobj=self.BaseLine.getArraySlice(org_frame, self.VideoItem.getImageItem(), returnSlice=False)
-                print(baselineobj)
-                baseinput=baselineobj[0]
-                print(baseinput)
+                
+                #get baseline positions and extrapolate to the edge of the crop
+                baselineobj=self.BaseLine.getSceneHandlePositions()
+                baseinput=[[baselineobj[0][1].x(),baselineobj[0][1].y()],[baselineobj[1][1].x(),baselineobj[1][1].y()]]
                 del baselineobj
-                #TODO fix baseline here, coordinates don't seem to correspond
                 rightbasepoint=np.argmax([baseinput[0][0],baseinput[1][0]])
                 baseslope=np.float(baseinput[rightbasepoint][1]-baseinput[1-rightbasepoint][1])/(baseinput[rightbasepoint][0]-baseinput[1-rightbasepoint][0])
                 base=np.array([[0,baseinput[0][1]-baseslope*baseinput[0][0]],[cropped.shape[1],baseslope*cropped.shape[1]+baseinput[0][1]-baseslope*baseinput[0][0]]])
-                print(base)
                 gray = cv2.cvtColor(cropped.astype('uint8'), cv2.COLOR_BGR2GRAY)
                 thresh, _ =cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU)
                 CroppedEdgeLeft,CroppedEdgeRight=linedge(gray,thresh)
-                EdgeLeft=CroppedEdgeLeft+0.5+cropcoords[0][1][0]
-                EdgeRight=CroppedEdgeRight+0.5+cropcoords[0][1][0]
-                
+                EdgeLeft=CroppedEdgeLeft+horizontalCropOffset
+                EdgeRight=CroppedEdgeRight+horizontalCropOffset
+                contactpointleft, contactpointright, thetal, thetar, dropvolume = analysis(EdgeLeft,EdgeRight,base,baseslope,cropped.shape,k=100,PO=2)
+                newrow={'thetaleft':thetal, 'thetaright':thetar, 'contactpointleft':contactpointleft,'contactpointright':contactpointright,'volume':dropvolume,'time':framecaptime}
+                self.MeasurementResult=self.MeasurementResult.append(newrow,ignore_index=True)
                 self.updateVideo.emit(cv2.cvtColor(org_frame, cv2.COLOR_BGR2RGB))
-                self.updateLeftEdge.emit(EdgeLeft,np.arange(0,len(EdgeLeft))+0.5+cropcoords[0][0][0])
-                self.updateRightEdge.emit(EdgeRight,np.arange(0,len(EdgeRight))+0.5+cropcoords[0][0][0])
+                self.updateLeftEdge.emit(EdgeLeft,np.arange(0,len(EdgeLeft))+verticalCropOffset)
+                self.updateRightEdge.emit(EdgeRight,np.arange(0,len(EdgeRight))+verticalCropOffset)
+                self.updatePlotLeft.emit(self.MeasurementResult['time'].to_numpy(),self.MeasurementResult['thetaleft'].to_numpy())
+                self.updatePlotRight.emit(self.MeasurementResult['time'].to_numpy(),self.MeasurementResult['thetaright'].to_numpy())
             else:
                 sleep(0.0001)
             if (not self.FrameSource.is_running and len(self.FrameSource.framebuffer)<1):
