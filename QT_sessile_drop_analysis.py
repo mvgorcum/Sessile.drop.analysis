@@ -22,6 +22,7 @@ class FrameSupply:
     def __init__(self):
         self.frameready = False
         self.is_running = False
+        self.framebuffer=[]
 
     def run(self):
         """
@@ -71,6 +72,8 @@ class OpencvReadVideo(FrameSupply):
         
     def getframesize(self):
         return self.cap.get(cv2.CAP_PROP_FRAME_WIDTH),self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+    
+
 
 class OpencvCamera(FrameSupply):
     """
@@ -79,7 +82,6 @@ class OpencvCamera(FrameSupply):
 
     def __init__(self):
         super().__init__()
-        self.framebuffer = []
         self.framecaptime = []
         self.imaging_thread = []
         self.keep_running = False
@@ -139,7 +141,6 @@ class OpencvCamera(FrameSupply):
             self.frameready = True
         self.cap.release()
         self.is_running = False
-        
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -222,15 +223,31 @@ class MainWindow(QtWidgets.QMainWindow):
         while self.StartStopButton.isChecked():
             org_frame = self.FrameSource.getnextframe()
             if not np.all(org_frame==-1):
-                gray = cv2.cvtColor(org_frame, cv2.COLOR_BGR2GRAY)
+                cropcoords=self.CropRoi.getArraySlice(org_frame, self.VideoItem.getImageItem(), returnSlice=False)
+                cropped=org_frame[cropcoords[0][0][0]:cropcoords[0][0][1],cropcoords[0][1][0]:cropcoords[0][1][1],:]
+                baselineobj=self.BaseLine.getArraySlice(org_frame, self.VideoItem.getImageItem(), returnSlice=False)
+                print(baselineobj)
+                baseinput=baselineobj[0]
+                print(baseinput)
+                del baselineobj
+                #TODO fix baseline here, coordinates don't seem to correspond
+                rightbasepoint=np.argmax([baseinput[0][0],baseinput[1][0]])
+                baseslope=np.float(baseinput[rightbasepoint][1]-baseinput[1-rightbasepoint][1])/(baseinput[rightbasepoint][0]-baseinput[1-rightbasepoint][0])
+                base=np.array([[0,baseinput[0][1]-baseslope*baseinput[0][0]],[cropped.shape[1],baseslope*cropped.shape[1]+baseinput[0][1]-baseslope*baseinput[0][0]]])
+                print(base)
+                gray = cv2.cvtColor(cropped.astype('uint8'), cv2.COLOR_BGR2GRAY)
                 thresh, _ =cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU)
-                EdgeLeft,EdgeRight=linedge(gray,thresh)
+                CroppedEdgeLeft,CroppedEdgeRight=linedge(gray,thresh)
+                EdgeLeft=CroppedEdgeLeft+0.5+cropcoords[0][1][0]
+                EdgeRight=CroppedEdgeRight+0.5+cropcoords[0][1][0]
                 
                 self.updateVideo.emit(cv2.cvtColor(org_frame, cv2.COLOR_BGR2RGB))
-                self.updateLeftEdge.emit(EdgeLeft+0.5,np.arange(0,len(EdgeLeft))+0.5)
-                self.updateRightEdge.emit(EdgeRight+0.5,np.arange(0,len(EdgeRight))+0.5)
+                self.updateLeftEdge.emit(EdgeLeft,np.arange(0,len(EdgeLeft))+0.5+cropcoords[0][0][0])
+                self.updateRightEdge.emit(EdgeRight,np.arange(0,len(EdgeRight))+0.5+cropcoords[0][0][0])
             else:
-                sleep(0.001)
+                sleep(0.0001)
+            if (not self.FrameSource.is_running and len(self.FrameSource.framebuffer)<1):
+                break
 
 
     
