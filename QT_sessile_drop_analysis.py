@@ -52,6 +52,7 @@ class OpencvReadVideo(FrameSupply):
         super().__init__()
         self.VideoFile=VideoFile
         self.is_running = False
+        self.gotcapturetime=False
     
     def start(self):
         self.cap = cv2.VideoCapture(self.VideoFile)
@@ -89,6 +90,7 @@ class OpencvCamera(FrameSupply):
         self.imaging_thread = []
         self.keep_running = False
         self.is_running = False
+        self.gotcapturetime=True
 
     def start(self):
         """
@@ -157,23 +159,23 @@ class MainWindow(QtWidgets.QMainWindow):
         uic.loadUi('Mainwindow.ui', self)
         
         self.VideoItem = pg.ImageView(parent=self.VideoWidget)
-        self.LeftEdgeItem=pg.PlotCurveItem(pen='c')
-        self.RightEdgeItem=pg.PlotCurveItem(pen='c')
+        self.LeftEdgeItem=pg.PlotCurveItem(pen='#ff7f0e')
+        self.RightEdgeItem=pg.PlotCurveItem(pen='#1f77b4')
         self.VideoItem.addItem(self.LeftEdgeItem)
         self.VideoItem.addItem(self.RightEdgeItem)
         self.updateVideo.connect(self.VideoItem.setImage)
         self.updateLeftEdge.connect(self.LeftEdgeItem.setData)
         self.updateRightEdge.connect(self.RightEdgeItem.setData)
         
-        self.ThetaLeftPlot=pg.PlotCurveItem()
-        self.ThetaRightPlot=pg.PlotCurveItem()
+        self.ThetaLeftPlot=pg.PlotCurveItem(pen='#ff7f0e')
+        self.ThetaRightPlot=pg.PlotCurveItem(pen='#1f77b4')
         self.PlotItem=self.PlotWidget.getPlotItem()
         self.PlotItem.addItem(self.ThetaLeftPlot)
         self.PlotItem.addItem(self.ThetaRightPlot)
         self.updatePlotLeft.connect(self.ThetaLeftPlot.setData)
         self.updatePlotRight.connect(self.ThetaRightPlot.setData)
         
-        self.BaseLine=pg.LineSegmentROI([(15,90),(100,90)],pen='r')
+        self.BaseLine=pg.LineSegmentROI([(15,90),(100,90)],pen='#d62728')
         self.CropRoi=pg.RectROI([10,10],[110,110])
         self.CropRoi.addScaleHandle([0,0],[1,1])
         self.VideoItem.addItem(self.BaseLine)
@@ -205,8 +207,14 @@ class MainWindow(QtWidgets.QMainWindow):
     def StartStop(self):
         if self.StartStopButton.isChecked():
             self.StartStopButton.setText('Stop Measurement')
+            self.PlotItem.setLabel('left',text='Contact angle [°]')
+            if self.FrameSource.gotcapturetime:
+                self.PlotItem.setLabel('bottom',text='Time')
+            else:
+                self.PlotItem.setLabel('bottom',text='Frame number')
             AnalysisThread = threading.Thread(target=self.RunAnalysis)
             AnalysisThread.start()
+            
         elif not self.StartStopButton.isChecked():
             self.StartStopButton.setText('Start Measurement')
     
@@ -245,7 +253,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 
                 #get baseline positions and extrapolate to the edge of the crop
                 baselineobj=self.BaseLine.getSceneHandlePositions()
-                baseinput=[[baselineobj[0][1].x(),baselineobj[0][1].y()],[baselineobj[1][1].x(),baselineobj[1][1].y()]]
+                baseinput=[[baselineobj[0][1].x()-horizontalCropOffset,baselineobj[0][1].y()-verticalCropOffset],[baselineobj[1][1].x()-horizontalCropOffset,baselineobj[1][1].y()-verticalCropOffset]]
                 del baselineobj
                 rightbasepoint=np.argmax([baseinput[0][0],baseinput[1][0]])
                 baseslope=np.float(baseinput[rightbasepoint][1]-baseinput[1-rightbasepoint][1])/(baseinput[rightbasepoint][0]-baseinput[1-rightbasepoint][0])
