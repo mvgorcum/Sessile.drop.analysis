@@ -72,7 +72,7 @@ class OpencvReadVideo(FrameSupply):
         else:
             self.is_running=False
             self.stop()
-            return -1
+            return -1,-1
         
     def getframesize(self):
         return self.cap.get(cv2.CAP_PROP_FRAME_WIDTH),self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
@@ -116,7 +116,7 @@ class OpencvCamera(FrameSupply):
             
             return self.framebuffer.pop(0),self.framecaptime.pop(0)
         else:
-            return -1
+            return -1,-1
         
     def getframesize(self):
         if not 'self.cap' in locals():
@@ -158,7 +158,7 @@ class MainWindow(QtWidgets.QMainWindow):
         super(MainWindow, self).__init__(*args, **kwargs)
         uic.loadUi('Mainwindow.ui', self)
         
-        self.VideoItem = pg.ImageView(parent=self.VideoWidget)
+        self.VideoItem = pg.ImageView(view=pg.PlotItem(),parent=self.VideoWidget)
         self.LeftEdgeItem=pg.PlotCurveItem(pen='#ff7f0e')
         self.RightEdgeItem=pg.PlotCurveItem(pen='#1f77b4')
         self.VideoItem.addItem(self.LeftEdgeItem)
@@ -246,18 +246,20 @@ class MainWindow(QtWidgets.QMainWindow):
             org_frame,framecaptime = self.FrameSource.getnextframe()
             if not np.all(org_frame==-1):
                 #get crop and save coordinate transformation
+                self.updateVideo.emit(cv2.cvtColor(org_frame, cv2.COLOR_BGR2RGB))
                 cropcoords=self.CropRoi.getArraySlice(org_frame, self.VideoItem.getImageItem(), returnSlice=False)
                 verticalCropOffset=0.5+cropcoords[0][0][0]
                 horizontalCropOffset=0.5+cropcoords[0][1][0]
                 cropped=org_frame[cropcoords[0][0][0]:cropcoords[0][0][1],cropcoords[0][1][0]:cropcoords[0][1][1],:]
                 
                 #get baseline positions and extrapolate to the edge of the crop
-                baselineobj=self.BaseLine.getSceneHandlePositions()
-                baseinput=[[baselineobj[0][1].x()-horizontalCropOffset,baselineobj[0][1].y()-verticalCropOffset],[baselineobj[1][1].x()-horizontalCropOffset,baselineobj[1][1].y()-verticalCropOffset]]
-                del baselineobj
+                _,basearray=self.BaseLine.getArrayRegion(org_frame, self.VideoItem.getImageItem(), returnSlice=False, returnMappedCoords=True)
+                baseinput=[[basearray[0,0]-horizontalCropOffset,basearray[1,0]-verticalCropOffset],[basearray[0,-1]-horizontalCropOffset,basearray[1,-1]-verticalCropOffset]]
+                del basearray
                 rightbasepoint=np.argmax([baseinput[0][0],baseinput[1][0]])
                 baseslope=np.float(baseinput[rightbasepoint][1]-baseinput[1-rightbasepoint][1])/(baseinput[rightbasepoint][0]-baseinput[1-rightbasepoint][0])
                 base=np.array([[0,baseinput[0][1]-baseslope*baseinput[0][0]],[cropped.shape[1],baseslope*cropped.shape[1]+baseinput[0][1]-baseslope*baseinput[0][0]]])
+                
                 gray = cv2.cvtColor(cropped.astype('uint8'), cv2.COLOR_BGR2GRAY)
                 thresh, _ =cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU)
                 CroppedEdgeLeft,CroppedEdgeRight=linedge(gray,thresh)
@@ -266,7 +268,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 contactpointleft, contactpointright, thetal, thetar, dropvolume = analysis(EdgeLeft,EdgeRight,base,baseslope,cropped.shape,k=100,PO=2)
                 newrow={'thetaleft':thetal, 'thetaright':thetar, 'contactpointleft':contactpointleft,'contactpointright':contactpointright,'volume':dropvolume,'time':framecaptime}
                 self.MeasurementResult=self.MeasurementResult.append(newrow,ignore_index=True)
-                self.updateVideo.emit(cv2.cvtColor(org_frame, cv2.COLOR_BGR2RGB))
+                
                 self.updateLeftEdge.emit(EdgeLeft,np.arange(0,len(EdgeLeft))+verticalCropOffset)
                 self.updateRightEdge.emit(EdgeRight,np.arange(0,len(EdgeRight))+verticalCropOffset)
                 self.updatePlotLeft.emit(self.MeasurementResult['time'].to_numpy(),self.MeasurementResult['thetaleft'].to_numpy())
