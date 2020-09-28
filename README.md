@@ -9,16 +9,16 @@ We use a subpixel edge detection, either fast, with a linear interpolation betwe
 To find the contact line position and the contact angle the detected edge is fitted with a 3rd order polynomial fit, and the slope of the baseline is also used to calculate the contact angles.
 Note that the drop volume assume cylindrical symmetry and if there is a needle present, the volume of the needle is added.
 
-A GUI using tkinter is available, as well as a standalone script. The standalone script is probably beneficial when using an IDE like spyder.
+A GUI using pyqtgraph and pyqt5 is available, as well as a standalone script. The standalone script is probably beneficial when using an IDE like spyder.
 
 ## Prerequisites
-The script requires numpy, scipy, matplotlib, imageio, skimage, shapely, and tkinter.
+The script requires numpy, scipy, shapely, pyqtgraph, and pyqt5.
 
 ## Running the script
-To use the GUI, run GUI_sessile_drop_analysis.py, while the standalone script is sessile_drop_analysis.py.
+To use the GUI, run QT_sessile_drop_analysis.py, while the standalone script is in Old scripts/sessile_drop_analysis.py.
 
 ## Some details
-* The code is written for Python 3.5  
+* The code is written for Python 3.8  
 * The edge detection uses only a horizontal subpixel correction, and when fitting the errorfunction, 40 pixels left and right of the edge are used.  
 * To find the contact angle and contact point a polyfit is used, but the fit is made flipping the x and y coordinates, because polyfits don't perform well for vertical lines (ie at contact angles of 90 degrees).  
 * In the non-gui script, the variable k is used to set the amount of pixels used in the polyfit, by default set at 70.  
