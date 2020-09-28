@@ -158,7 +158,7 @@ class MainWindow(QtWidgets.QMainWindow):
         super(MainWindow, self).__init__(*args, **kwargs)
         uic.loadUi('Mainwindow.ui', self)
         
-        self.VideoItem = pg.ImageView(view=pg.PlotItem(),parent=self.VideoWidget)
+        self.VideoItem = pg.ImageView(parent=self.VideoWidget)
         self.LeftEdgeItem=pg.PlotCurveItem(pen='#ff7f0e')
         self.RightEdgeItem=pg.PlotCurveItem(pen='#1f77b4')
         self.VideoItem.addItem(self.LeftEdgeItem)
@@ -176,12 +176,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.updatePlotRight.connect(self.ThetaRightPlot.setData)
         
         self.BaseLine=pg.LineSegmentROI([(15,90),(100,90)],pen='#d62728')
-        self.CropRoi=pg.RectROI([10,10],[110,110])
+        self.CropRoi=pg.RectROI([10,10],[110,110],scaleSnap=True)
         self.CropRoi.addScaleHandle([0,0],[1,1])
         self.VideoItem.addItem(self.BaseLine)
         self.VideoItem.addItem(self.CropRoi)
         
         self.actionOpen.triggered.connect(self.openCall)
+        self.actionSave.triggered.connect(self.SaveResult)
         self.StartStopButton.clicked.connect(self.StartStop)
         self.CameraToggleButton.clicked.connect(self.CameraToggle)
         
@@ -198,7 +199,7 @@ class MainWindow(QtWidgets.QMainWindow):
         FrameWidth,FrameHeight=self.FrameSource.getframesize()
         self.CropRoi.setPos([FrameWidth*.1,FrameHeight*.1])
         self.CropRoi.setSize([FrameWidth*.8,FrameHeight*.8])
-        #self.BaseLine.setPos([FrameWidth*.2,FrameHeight*.7])
+        self.BaseLine.setPos([FrameWidth*.2,FrameHeight*.7])
         firstframe,_=self.FrameSource.getnextframe()
         self.VideoItem.setImage(cv2.cvtColor(firstframe, cv2.COLOR_BGR2RGB),autoRange=True)
         
@@ -258,7 +259,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 del basearray
                 rightbasepoint=np.argmax([baseinput[0][0],baseinput[1][0]])
                 baseslope=np.float(baseinput[rightbasepoint][1]-baseinput[1-rightbasepoint][1])/(baseinput[rightbasepoint][0]-baseinput[1-rightbasepoint][0])
-                base=np.array([[0,baseinput[0][1]-baseslope*baseinput[0][0]],[cropped.shape[1],baseslope*cropped.shape[1]+baseinput[0][1]-baseslope*baseinput[0][0]]])
+                base=np.array([[0,baseinput[0][1]-baseslope*baseinput[0][0]],[org_frame.shape[1],baseslope*org_frame.shape[1]+baseinput[0][1]-baseslope*baseinput[0][0]]])
                 
                 gray = cv2.cvtColor(cropped.astype('uint8'), cv2.COLOR_BGR2GRAY)
                 thresh, _ =cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU)
@@ -277,8 +278,16 @@ class MainWindow(QtWidgets.QMainWindow):
                 sleep(0.0001)
             if (not self.FrameSource.is_running and len(self.FrameSource.framebuffer)<1):
                 break
-
-
+            
+    def SaveResult(self):
+        if  len(self.MeasurementResult.index)>0:
+            SaveFileName, _ =QtGui.QFileDialog.getSaveFileName(self,'Save file', '', "Excel Files (*.xlsx);;All Files (*)")
+            self.MeasurementResult.to_excel(SaveFileName)
+        else:
+            errorpopup=QtGui.QMessageBox()
+            errorpopup.setText('Nothing to save')
+            errorpopup.setStandardButtons(QtGui.QMessageBox.Ok)
+            errorpopup.exec_()
     
 def main():
     app = QtWidgets.QApplication(sys.argv)
