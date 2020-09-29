@@ -235,11 +235,11 @@ class MainWindow(QtWidgets.QMainWindow):
             if self.StartStopButton.isChecked():
                 sleep(0.5)
             else:
-                org_frame = self.FrameSource.getnextframe()
+                org_frame, _ = self.FrameSource.getnextframe()
                 if not np.all(org_frame==-1):
                     self.updateVideo.emit(cv2.cvtColor(org_frame, cv2.COLOR_BGR2RGB))
                 else:
-                    sleep(0.0001)
+                    sleep(0.001)
         self.FrameSource.stop()
     
     def RunAnalysis(self):
