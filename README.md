@@ -1,4 +1,6 @@
 # Python sessile drop analysis
+<a href="hthttps://app.element.io/#/room/#Sessile.Drop.Analysis:matrix.vgorcum.com" target="_new"><img src="https://img.shields.io/static/v1?label=Chat&message=Matrix&color=brightgreen"></a></span></a>
+
 Made by Mathijs van Gorcum during his PhD at the Physics of Fluids group of the University of Twente.
 
 Python script to analyse sessile drops by measuring contact angle, drop volume and contact line speed.  
