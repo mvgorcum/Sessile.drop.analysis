@@ -158,11 +158,17 @@ class MainWindow(QtWidgets.QMainWindow):
         super(MainWindow, self).__init__(*args, **kwargs)
         uic.loadUi('Mainwindow.ui', self)
         
-        self.VideoItem = pg.ImageView(parent=self.VideoWidget)
+        self.VideoItem = pg.ImageItem()
+        self.RootVidPlot=self.VideoWidget.getPlotItem()
+        self.RootVidPlot.setAspectLocked(True)
+        self.RootVidPlot.hideAxis('bottom')
+        self.RootVidPlot.hideAxis('left')
+        self.RootVidPlot.invertY(True)
+        self.RootVidPlot.addItem(self.VideoItem)
         self.LeftEdgeItem=pg.PlotCurveItem(pen='#ff7f0e')
         self.RightEdgeItem=pg.PlotCurveItem(pen='#1f77b4')
-        self.VideoItem.addItem(self.LeftEdgeItem)
-        self.VideoItem.addItem(self.RightEdgeItem)
+        self.RootVidPlot.addItem(self.LeftEdgeItem)
+        self.RootVidPlot.addItem(self.RightEdgeItem)
         self.updateVideo.connect(self.VideoItem.setImage)
         self.updateLeftEdge.connect(self.LeftEdgeItem.setData)
         self.updateRightEdge.connect(self.RightEdgeItem.setData)
@@ -178,8 +184,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.BaseLine=pg.LineSegmentROI([(15,90),(100,90)],pen='#d62728')
         self.CropRoi=pg.RectROI([10,10],[110,110],scaleSnap=True)
         self.CropRoi.addScaleHandle([0,0],[1,1])
-        self.VideoItem.addItem(self.BaseLine)
-        self.VideoItem.addItem(self.CropRoi)
+        self.VideoWidget.addItem(self.BaseLine)
+        self.VideoWidget.addItem(self.CropRoi)
         
         self.actionOpen.triggered.connect(self.openCall)
         self.actionSave.triggered.connect(self.SaveResult)
@@ -248,13 +254,13 @@ class MainWindow(QtWidgets.QMainWindow):
             if not np.all(org_frame==-1):
                 #get crop and save coordinate transformation
                 self.updateVideo.emit(cv2.cvtColor(org_frame, cv2.COLOR_BGR2RGB))
-                cropcoords=self.CropRoi.getArraySlice(org_frame, self.VideoItem.getImageItem(), returnSlice=False)
+                cropcoords=self.CropRoi.getArraySlice(org_frame, self.VideoItem, returnSlice=False)
                 verticalCropOffset=0.5+cropcoords[0][0][0]
                 horizontalCropOffset=0.5+cropcoords[0][1][0]
                 cropped=org_frame[cropcoords[0][0][0]:cropcoords[0][0][1],cropcoords[0][1][0]:cropcoords[0][1][1],:]
                 
                 #get baseline positions and extrapolate to the edge of the crop
-                _,basearray=self.BaseLine.getArrayRegion(org_frame, self.VideoItem.getImageItem(), returnSlice=False, returnMappedCoords=True)
+                _,basearray=self.BaseLine.getArrayRegion(org_frame, self.VideoItem, returnSlice=False, returnMappedCoords=True)
                 baseinput=[[basearray[0,0]-horizontalCropOffset,basearray[1,0]-verticalCropOffset],[basearray[0,-1]-horizontalCropOffset,basearray[1,-1]-verticalCropOffset]]
                 del basearray
                 rightbasepoint=np.argmax([baseinput[0][0],baseinput[1][0]])
