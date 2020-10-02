@@ -158,12 +158,14 @@ class MainWindow(QtWidgets.QMainWindow):
         super(MainWindow, self).__init__(*args, **kwargs)
         uic.loadUi('Mainwindow.ui', self)
         
-        self.VideoItem = pg.ImageItem()
+        
         self.RootVidPlot=self.VideoWidget.getPlotItem()
         self.RootVidPlot.setAspectLocked(True)
         self.RootVidPlot.hideAxis('bottom')
         self.RootVidPlot.hideAxis('left')
         self.RootVidPlot.invertY(True)
+        
+        self.VideoItem = pg.ImageItem()
         self.RootVidPlot.addItem(self.VideoItem)
         self.LeftEdgeItem=pg.PlotCurveItem(pen='#ff7f0e')
         self.RightEdgeItem=pg.PlotCurveItem(pen='#1f77b4')
@@ -184,8 +186,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.BaseLine=pg.LineSegmentROI([(15,90),(100,90)],pen='#d62728')
         self.CropRoi=pg.RectROI([10,10],[110,110],scaleSnap=True)
         self.CropRoi.addScaleHandle([0,0],[1,1])
-        self.VideoWidget.addItem(self.BaseLine)
         self.VideoWidget.addItem(self.CropRoi)
+        self.VideoWidget.addItem(self.BaseLine)
+        
         
         self.actionOpen.triggered.connect(self.openCall)
         self.actionSave.triggered.connect(self.SaveResult)
