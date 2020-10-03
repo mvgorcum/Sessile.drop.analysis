@@ -269,13 +269,12 @@ class MainWindow(QtWidgets.QMainWindow):
                 rightbasepoint=np.argmax([baseinput[0][0],baseinput[1][0]])
                 baseslope=np.float(baseinput[rightbasepoint][1]-baseinput[1-rightbasepoint][1])/(baseinput[rightbasepoint][0]-baseinput[1-rightbasepoint][0])
                 base=np.array([[0,baseinput[0][1]-baseslope*baseinput[0][0]],[org_frame.shape[1],baseslope*org_frame.shape[1]+baseinput[0][1]-baseslope*baseinput[0][0]]])
-                
                 gray = cv2.cvtColor(cropped.astype('uint8'), cv2.COLOR_BGR2GRAY)
                 thresh, _ =cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU)
                 CroppedEdgeLeft,CroppedEdgeRight=linedge(gray,thresh)
                 EdgeLeft=CroppedEdgeLeft+horizontalCropOffset
                 EdgeRight=CroppedEdgeRight+horizontalCropOffset
-                contactpointleft, contactpointright, thetal, thetar, dropvolume = analysis(EdgeLeft,EdgeRight,base,baseslope,cropped.shape,k=100,PO=2)
+                contactpointleft, contactpointright, thetal, thetar, dropvolume = analysis(EdgeLeft,EdgeRight,base,cropped.shape,k=100,PO=2)
                 newrow={'thetaleft':thetal, 'thetaright':thetar, 'contactpointleft':contactpointleft,'contactpointright':contactpointright,'volume':dropvolume,'time':framecaptime}
                 self.MeasurementResult=self.MeasurementResult.append(newrow,ignore_index=True)
                 

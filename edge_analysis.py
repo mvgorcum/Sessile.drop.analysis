@@ -1,4 +1,4 @@
-def analysis(edgeleft,edgeright,baseinput,baseslope,framesize,k=100,PO=2):
+def analysis(edgeleft,edgeright,baseinput,framesize,k=100,PO=2):
     """
     Analyzes the detected edge of the drop with the set baseline to
     give the contact angle, contact line position, and drop volume
@@ -28,7 +28,7 @@ def analysis(edgeleft,edgeright,baseinput,baseslope,framesize,k=100,PO=2):
     rightfit=np.polyfit(range(0,fitpointsright.shape[0]),fitpointsright,PO)
     rightvec=np.array([1,rightfit[PO-1]]) 
     
-    basevec=np.array([-baseslope,1]) 
+    basevec=np.array([-(baseinput[1,1]-baseinput[0,1])/baseinput[1,0],1]) 
     thetal=np.arccos(np.dot(basevec,leftvec)/(np.sqrt(np.dot(basevec,basevec))*np.sqrt(np.dot(leftvec,leftvec))))*180/np.pi
     thetar=180-np.arccos(np.dot(basevec,rightvec)/(np.sqrt(np.dot(basevec,basevec))*np.sqrt(np.dot(rightvec,rightvec))))*180/np.pi
     contactpointright=rightfit[PO]
