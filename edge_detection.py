@@ -21,8 +21,6 @@ def linear_subpixel_detection(image,thresh):
         if edgeright[y]!=framesize[1]:
             subpxcorr=(thresh-np.float_(image[y,np.int(edgeright[y]-1)]))/(np.float_(image[y,np.int(edgeright[y])])-np.float_(image[y,np.int(edgeright[y]-1)]))
             edgeright[y]=edgeright[y]+subpxcorr-1
-        else:
-            edgeright[y]=0
     return edgeleft, edgeright;
 
 

@@ -4,6 +4,7 @@ from PyQt5.QtCore import pyqtSignal
 import cv2
 import pyqtgraph as pg
 import sys
+import imageio
 from pathlib import Path
 from edge_detection import linear_subpixel_detection as linedge
 from edge_analysis import analysis
@@ -12,6 +13,7 @@ import pandas as pd
 import threading
 from time import sleep
 import datetime
+import magic
 
 pg.setConfigOptions(imageAxisOrder='row-major')
 
@@ -63,12 +65,17 @@ class OpencvReadVideo(FrameSupply):
         Stop the feed
         """
         self.cap.release()
-        
+    
+    def getfirstframe(self):
+        ret, org_frame = self.cap.read()
+        self.cap.set(cv2.CAP_PROP_POS_FRAMES,0)
+        return cv2.cvtColor(org_frame, cv2.COLOR_BGR2RGB),0
+    
     def getnextframe(self):
         ret, org_frame = self.cap.read()
         framenumber = self.cap.get(cv2.CAP_PROP_POS_FRAMES)
         if ret:
-            return org_frame,framenumber
+            return cv2.cvtColor(org_frame, cv2.COLOR_BGR2RGB),framenumber
         else:
             self.is_running=False
             self.stop()
@@ -77,6 +84,42 @@ class OpencvReadVideo(FrameSupply):
     def getframesize(self):
         return self.cap.get(cv2.CAP_PROP_FRAME_WIDTH),self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
     
+
+class ImageReader(FrameSupply):
+    """
+    Read videofile with OpenCV
+    """
+    def __init__(self,ImageFile):
+        super().__init__()
+        self.ImageFile=ImageFile
+        self.is_running = False
+        self.gotcapturetime=False
+    
+    def start(self):
+        self.is_running = True
+        
+    def stop(self):
+        """
+        Stop the feed
+        """
+        pass
+    
+    def getfirstframe(self):
+        return imageio.imread(self.ImageFile), 0
+        
+    def getnextframe(self):
+        if self.is_running:
+            framenumber=1
+            org_frame = imageio.imread(self.ImageFile)
+            self.is_running=False
+            return org_frame,framenumber
+        else:
+            return -1,-1
+        
+    def getframesize(self):
+        org_frame = imageio.imread(self.ImageFile)
+        size=org_frame.shape
+        return size[0],size[1]
 
 
 class OpencvCamera(FrameSupply):
@@ -141,12 +184,14 @@ class OpencvCamera(FrameSupply):
             self.keep_running = False
         while self.keep_running:
             ret, org_frame = self.cap.read()
-            self.framebuffer.append(org_frame)
-            self.framecaptime.append(datetime.datetime.now())
+            self.framebuffer.append(cv2.cvtColor(org_frame, cv2.COLOR_BGR2RGB))
+            self.framecaptime.append(np.datetime64(datetime.datetime.now()))
             self.frameready = True
         self.cap.release()
         self.is_running = False
 
+
+filetypemap={'image/tiff':ImageReader,'image/png':ImageReader,'video/x-msvideo':OpencvReadVideo}
 
 class MainWindow(QtWidgets.QMainWindow):
     updateVideo = pyqtSignal(np.ndarray)
@@ -178,8 +223,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ThetaLeftPlot=pg.PlotCurveItem(pen='#ff7f0e')
         self.ThetaRightPlot=pg.PlotCurveItem(pen='#1f77b4')
         self.PlotItem=self.PlotWidget.getPlotItem()
-        self.PlotItem.addItem(self.ThetaLeftPlot)
-        self.PlotItem.addItem(self.ThetaRightPlot)
         self.updatePlotLeft.connect(self.ThetaLeftPlot.setData)
         self.updatePlotRight.connect(self.ThetaRightPlot.setData)
         
@@ -202,16 +245,24 @@ class MainWindow(QtWidgets.QMainWindow):
         if self.FrameSource.is_running:
             self.FrameSource.stop()
         home_dir = '/data/github/Sessile.drop.analysis/Sample/'
-        VideoFile, _ = QtGui.QFileDialog.getOpenFileName(self,'Open file', home_dir)  
-        self.FrameSource=OpencvReadVideo(VideoFile)
-        self.FrameSource.start()
-        FrameWidth,FrameHeight=self.FrameSource.getframesize()
-        self.CropRoi.setPos([FrameWidth*.1,FrameHeight*.1])
-        self.CropRoi.setSize([FrameWidth*.8,FrameHeight*.8])
-        self.BaseLine.setPos([FrameWidth*.2,FrameHeight*.7])
-        firstframe,_=self.FrameSource.getnextframe()
-        self.VideoItem.setImage(cv2.cvtColor(firstframe, cv2.COLOR_BGR2RGB),autoRange=True)
-        
+        VideoFile, _ = QtGui.QFileDialog.getOpenFileName(self,'Open file', home_dir)
+        mimetype=magic.from_file(VideoFile,mime=True)
+        self.MeasurementResult=pd.DataFrame(columns=['thetaleft', 'thetaright', 'contactpointleft','contactpointright','volume','time'])
+        self.PlotItem.clear()
+        if any(mimetype in key for key in filetypemap):
+            self.FrameSource=filetypemap[mimetype](VideoFile)
+            self.FrameSource.start()
+            FrameWidth,FrameHeight=self.FrameSource.getframesize()
+            self.CropRoi.setPos([FrameWidth*.1,FrameHeight*.1])
+            self.CropRoi.setSize([FrameWidth*.8,FrameHeight*.8])
+            self.BaseLine.setPos([FrameWidth*.2,FrameHeight*.7])
+            firstframe,_=self.FrameSource.getfirstframe()
+            self.VideoItem.setImage(firstframe,autoRange=True)
+        else:
+            errorpopup=QtGui.QMessageBox()
+            errorpopup.setText('Unkown filetype')
+            errorpopup.setStandardButtons(QtGui.QMessageBox.Ok)
+            errorpopup.exec_()
         
         
     def StartStop(self):
@@ -219,7 +270,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.StartStopButton.setText('Stop Measurement')
             self.PlotItem.setLabel('left',text='Contact angle [°]')
             if self.FrameSource.gotcapturetime:
-                self.PlotItem.setLabel('bottom',text='Time')
+                self.PlotItem.setLabel('bottom',text='Time [s]')
             else:
                 self.PlotItem.setLabel('bottom',text='Frame number')
             AnalysisThread = threading.Thread(target=self.RunAnalysis)
@@ -238,6 +289,8 @@ class MainWindow(QtWidgets.QMainWindow):
             self.BaseLine.setPos([FrameWidth*.2,FrameHeight*.7])
             CameraThread = threading.Thread(target=self.CameraCapture)
             CameraThread.start()
+            self.MeasurementResult=pd.DataFrame(columns=['thetaleft', 'thetaright', 'contactpointleft','contactpointright','volume','time'])
+            self.PlotItem.clear()
     
     def CameraCapture(self):
         while self.CameraToggleButton.isChecked():
@@ -246,20 +299,23 @@ class MainWindow(QtWidgets.QMainWindow):
             else:
                 org_frame, _ = self.FrameSource.getnextframe()
                 if not np.all(org_frame==-1):
-                    self.updateVideo.emit(cv2.cvtColor(org_frame, cv2.COLOR_BGR2RGB))
+                    self.updateVideo.emit(org_frame)
                 else:
                     sleep(0.001)
         self.FrameSource.stop()
     
-    def RunAnalysis(self):
+    def RunAnalysis(self):                
+        self.PlotItem.addItem(self.ThetaLeftPlot)
+        self.PlotItem.addItem(self.ThetaRightPlot)
         while self.StartStopButton.isChecked():
             org_frame,framecaptime = self.FrameSource.getnextframe()
             if not np.all(org_frame==-1):
                 #get crop and save coordinate transformation
-                self.updateVideo.emit(cv2.cvtColor(org_frame, cv2.COLOR_BGR2RGB))
+                self.updateVideo.emit(org_frame)
                 cropcoords=self.CropRoi.getArraySlice(org_frame, self.VideoItem, returnSlice=False)
                 verticalCropOffset=0.5+cropcoords[0][0][0]
                 horizontalCropOffset=0.5+cropcoords[0][1][0]
+
                 cropped=org_frame[cropcoords[0][0][0]:cropcoords[0][0][1],cropcoords[0][1][0]:cropcoords[0][1][1],:]
                 
                 #get baseline positions and extrapolate to the edge of the crop
@@ -269,7 +325,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 rightbasepoint=np.argmax([baseinput[0][0],baseinput[1][0]])
                 baseslope=np.float(baseinput[rightbasepoint][1]-baseinput[1-rightbasepoint][1])/(baseinput[rightbasepoint][0]-baseinput[1-rightbasepoint][0])
                 base=np.array([[0,baseinput[0][1]-baseslope*baseinput[0][0]],[org_frame.shape[1],baseslope*org_frame.shape[1]+baseinput[0][1]-baseslope*baseinput[0][0]]])
-                gray = cv2.cvtColor(cropped.astype('uint8'), cv2.COLOR_BGR2GRAY)
+                gray = cv2.cvtColor(cropped.astype('uint8'), cv2.COLOR_RGB2GRAY)
                 thresh, _ =cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU)
                 CroppedEdgeLeft,CroppedEdgeRight=linedge(gray,thresh)
                 EdgeLeft=CroppedEdgeLeft+horizontalCropOffset
@@ -277,18 +333,28 @@ class MainWindow(QtWidgets.QMainWindow):
                 contactpointleft, contactpointright, thetal, thetar, dropvolume = analysis(EdgeLeft,EdgeRight,base,cropped.shape,k=100,PO=2)
                 newrow={'thetaleft':thetal, 'thetaright':thetar, 'contactpointleft':contactpointleft,'contactpointright':contactpointright,'volume':dropvolume,'time':framecaptime}
                 self.MeasurementResult=self.MeasurementResult.append(newrow,ignore_index=True)
-                
+                if self.FrameSource.gotcapturetime:
+                    plottime=self.MeasurementResult['time']-self.MeasurementResult.iloc[0]['time']
+                    #convert from nanoseconds to seconds
+                    plottime=plottime.to_numpy().astype('float')*10**-9
+                else:
+                    plottime=self.MeasurementResult['time'].to_numpy()
+                plotleft=self.MeasurementResult['thetaleft'].to_numpy()
+                plotright=self.MeasurementResult['thetaright'].to_numpy()
+                self.MeasurementResult=self.MeasurementResult.append(newrow,ignore_index=True)
                 self.updateLeftEdge.emit(EdgeLeft,np.arange(0,len(EdgeLeft))+verticalCropOffset)
                 self.updateRightEdge.emit(EdgeRight,np.arange(0,len(EdgeRight))+verticalCropOffset)
-                self.updatePlotLeft.emit(self.MeasurementResult['time'].to_numpy(),self.MeasurementResult['thetaleft'].to_numpy())
-                self.updatePlotRight.emit(self.MeasurementResult['time'].to_numpy(),self.MeasurementResult['thetaright'].to_numpy())
+                self.updatePlotLeft.emit(plottime,plotleft)
+                self.updatePlotRight.emit(plottime,plotright)
             else:
-                sleep(0.0001)
+                sleep(0.001)
             if (not self.FrameSource.is_running and len(self.FrameSource.framebuffer)<1):
                 break
             
     def SaveResult(self):
         if  len(self.MeasurementResult.index)>0:
+            if not self.FrameSource.gotcapturetime:
+                self.MeasurementResult=self.MeasurementResult.rename(columns={"time": "framenumber"})
             SaveFileName, _ =QtGui.QFileDialog.getSaveFileName(self,'Save file', '', "Excel Files (*.xlsx);;All Files (*)")
             self.MeasurementResult.to_excel(SaveFileName)
         else:

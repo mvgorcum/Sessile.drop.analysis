@@ -73,7 +73,13 @@
         </property>
         <property name="minimumSize">
          <size>
-          <width>134</width>
+          <width>140</width>
+          <height>34</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>140</width>
           <height>34</height>
          </size>
         </property>
@@ -111,8 +117,14 @@
         </property>
         <property name="minimumSize">
          <size>
-          <width>134</width>
+          <width>140</width>
           <height>34</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>140</width>
+          <height>33</height>
          </size>
         </property>
         <property name="text">
@@ -133,7 +145,7 @@
      <x>0</x>
      <y>0</y>
      <width>1280</width>
-     <height>30</height>
+     <height>32</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
