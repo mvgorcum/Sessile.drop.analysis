@@ -72,8 +72,8 @@ class OpencvReadVideo(FrameSupply):
         return cv2.cvtColor(org_frame, cv2.COLOR_BGR2RGB),0
     
     def getnextframe(self):
-        ret, org_frame = self.cap.read()
         framenumber = self.cap.get(cv2.CAP_PROP_POS_FRAMES)
+        ret, org_frame = self.cap.read()
         if ret:
             return cv2.cvtColor(org_frame, cv2.COLOR_BGR2RGB),framenumber
         else:
@@ -94,32 +94,40 @@ class ImageReader(FrameSupply):
         self.ImageFile=ImageFile
         self.is_running = False
         self.gotcapturetime=False
-    
+        self.framenumber=-1
+        
     def start(self):
         self.is_running = True
+        self.ImageReader=imageio.get_reader(self.ImageFile)
         
     def stop(self):
         """
         Stop the feed
         """
-        pass
+        self.is_running = False
+        self.ImageReader.close()
     
     def getfirstframe(self):
-        return imageio.imread(self.ImageFile), 0
+        self.ImageReader.set_image_index(0)
+        org_frame=self.ImageReader.get_next_data()
+        self.ImageReader.set_image_index(self.framenumber+1)
+        return org_frame, 0
         
     def getnextframe(self):
         if self.is_running:
-            framenumber=1
-            org_frame = imageio.imread(self.ImageFile)
-            self.is_running=False
-            return org_frame,framenumber
+            self.framenumber+=1
+            org_frame = self.ImageReader.get_next_data()
+            self.is_running=self.ImageReader.closed
+            return org_frame,self.framenumber
         else:
             return -1,-1
         
     def getframesize(self):
-        org_frame = imageio.imread(self.ImageFile)
+        self.ImageReader.set_image_index(0)
+        org_frame=self.ImageReader.get_next_data()
+        self.ImageReader.set_image_index(self.framenumber+1)
         size=org_frame.shape
-        return size[0],size[1]
+        return size[1],size[0]
 
 
 class OpencvCamera(FrameSupply):
@@ -325,7 +333,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 verticalCropOffset=0.5+cropcoords[0][0][0]
                 horizontalCropOffset=0.5+cropcoords[0][1][0]
 
-                cropped=org_frame[cropcoords[0][0][0]:cropcoords[0][0][1],cropcoords[0][1][0]:cropcoords[0][1][1],:]
+                cropped=org_frame[cropcoords[0][0][0]:cropcoords[0][0][1],cropcoords[0][1][0]:cropcoords[0][1][1]]
                 #get baseline positions and extrapolate to the edge of the crop
                 _,basearray=self.BaseLine.getArrayRegion(org_frame, self.VideoItem, returnSlice=False, returnMappedCoords=True)
                 baseinput=[[basearray[0,0]-horizontalCropOffset,basearray[1,0]-verticalCropOffset],[basearray[0,-1]-horizontalCropOffset,basearray[1,-1]-verticalCropOffset]]
@@ -333,8 +341,12 @@ class MainWindow(QtWidgets.QMainWindow):
                 rightbasepoint=np.argmax([baseinput[0][0],baseinput[1][0]])
                 baseslope=np.float(baseinput[rightbasepoint][1]-baseinput[1-rightbasepoint][1])/(baseinput[rightbasepoint][0]-baseinput[1-rightbasepoint][0])
                 base=np.array([[0,baseinput[0][1]-baseslope*baseinput[0][0]],[org_frame.shape[1],baseslope*org_frame.shape[1]+baseinput[0][1]-baseslope*baseinput[0][0]]])
-                gray = cv2.cvtColor(cropped.astype('uint8'), cv2.COLOR_RGB2GRAY)
-                thresh, _ =cv2.threshold(gray, 0, 255, cv2.THRESH_OTSU)
+                if len(org_frame.shape)==3:
+                    gray = cv2.cvtColor(cropped, cv2.COLOR_RGB2GRAY)
+                else:
+                    gray = cropped
+                thresh, _ =cv2.threshold(gray, 0, np.iinfo(type(gray.flat[0])).max, cv2.THRESH_OTSU)
+                
                 CroppedEdgeLeft,CroppedEdgeRight=linedge(gray,thresh)
                 EdgeLeft=CroppedEdgeLeft+horizontalCropOffset
                 EdgeRight=CroppedEdgeRight+horizontalCropOffset
