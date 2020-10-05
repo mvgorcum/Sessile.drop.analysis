@@ -241,6 +241,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.FrameSource=FrameSupply()
         self.MeasurementResult=pd.DataFrame(columns=['thetaleft', 'thetaright', 'contactpointleft','contactpointright','volume','time'])
 
+        self.MaybeSave=False
+    
+    def closeEvent(self, event):
+        if self.FrameSource.is_running:
+            self.FrameSource.stop()
+            
+
+
+
     def openCall(self):
         if self.FrameSource.is_running:
             self.FrameSource.stop()
@@ -317,7 +326,6 @@ class MainWindow(QtWidgets.QMainWindow):
                 horizontalCropOffset=0.5+cropcoords[0][1][0]
 
                 cropped=org_frame[cropcoords[0][0][0]:cropcoords[0][0][1],cropcoords[0][1][0]:cropcoords[0][1][1],:]
-                
                 #get baseline positions and extrapolate to the edge of the crop
                 _,basearray=self.BaseLine.getArrayRegion(org_frame, self.VideoItem, returnSlice=False, returnMappedCoords=True)
                 baseinput=[[basearray[0,0]-horizontalCropOffset,basearray[1,0]-verticalCropOffset],[basearray[0,-1]-horizontalCropOffset,basearray[1,-1]-verticalCropOffset]]
@@ -346,6 +354,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.updateRightEdge.emit(EdgeRight,np.arange(0,len(EdgeRight))+verticalCropOffset)
                 self.updatePlotLeft.emit(plottime,plotleft)
                 self.updatePlotRight.emit(plottime,plotright)
+                self.MaybeSave=True
             else:
                 sleep(0.001)
             if (not self.FrameSource.is_running and len(self.FrameSource.framebuffer)<1):
@@ -357,6 +366,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.MeasurementResult=self.MeasurementResult.rename(columns={"time": "framenumber"})
             SaveFileName, _ =QtGui.QFileDialog.getSaveFileName(self,'Save file', '', "Excel Files (*.xlsx);;All Files (*)")
             self.MeasurementResult.to_excel(SaveFileName)
+            self.MaybeSave=False
         else:
             errorpopup=QtGui.QMessageBox()
             errorpopup.setText('Nothing to save')
