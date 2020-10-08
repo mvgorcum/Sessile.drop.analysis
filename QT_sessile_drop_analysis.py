@@ -6,6 +6,7 @@ import pyqtgraph as pg
 import sys
 import imageio
 from pathlib import Path
+from skimage.filters import threshold_otsu
 from edge_detection import linear_subpixel_detection as linedge
 from edge_analysis import analysis
 import numpy as np
@@ -16,6 +17,7 @@ import datetime
 import magic
 
 pg.setConfigOptions(imageAxisOrder='row-major')
+
 
 
 class FrameSupply:
@@ -98,34 +100,30 @@ class ImageReader(FrameSupply):
         
     def start(self):
         self.is_running = True
-        self.ImageReader=imageio.get_reader(self.ImageFile)
+        self.IOReader=imageio.get_reader(self.ImageFile)
+        self.nframes=self.IOReader.get_length()
         
     def stop(self):
         """
         Stop the feed
         """
         self.is_running = False
-        self.ImageReader.close()
+        self.IOReader.close()
     
     def getfirstframe(self):
-        self.ImageReader.set_image_index(0)
-        org_frame=self.ImageReader.get_next_data()
-        self.ImageReader.set_image_index(self.framenumber+1)
+        org_frame=self.IOReader.get_data(0)
         return org_frame, 0
         
     def getnextframe(self):
-        if self.is_running:
+        if self.framenumber+1<self.nframes:
             self.framenumber+=1
-            org_frame = self.ImageReader.get_next_data()
-            self.is_running=self.ImageReader.closed
+            org_frame = self.IOReader.get_data(self.framenumber)
             return org_frame,self.framenumber
         else:
             return -1,-1
         
     def getframesize(self):
-        self.ImageReader.set_image_index(0)
-        org_frame=self.ImageReader.get_next_data()
-        self.ImageReader.set_image_index(self.framenumber+1)
+        org_frame=self.IOReader.get_data(0)
         size=org_frame.shape
         return size[1],size[0]
 
@@ -201,6 +199,8 @@ class OpencvCamera(FrameSupply):
 
 filetypemap={'image/tiff':ImageReader,'image/png':ImageReader,'video/x-msvideo':OpencvReadVideo}
 
+
+
 class MainWindow(QtWidgets.QMainWindow):
     updateVideo = pyqtSignal(np.ndarray)
     updateLeftEdge = pyqtSignal(np.ndarray,np.ndarray)
@@ -228,8 +228,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.updateLeftEdge.connect(self.LeftEdgeItem.setData)
         self.updateRightEdge.connect(self.RightEdgeItem.setData)
         
-        self.ThetaLeftPlot=pg.PlotCurveItem(pen='#ff7f0e')
-        self.ThetaRightPlot=pg.PlotCurveItem(pen='#1f77b4')
+        self.ThetaLeftPlot=pg.ScatterPlotItem(pen='#ff7f0e',brush='#ff7f0e',symbol='o')
+        self.ThetaRightPlot=pg.ScatterPlotItem(pen='#1f77b4',brush='#1f77b4',symbol='o')
         self.PlotItem=self.PlotWidget.getPlotItem()
         self.updatePlotLeft.connect(self.ThetaLeftPlot.setData)
         self.updatePlotRight.connect(self.ThetaRightPlot.setData)
@@ -344,9 +344,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 if len(org_frame.shape)==3:
                     gray = cv2.cvtColor(cropped, cv2.COLOR_RGB2GRAY)
                 else:
-                    gray = cropped
-                thresh, _ =cv2.threshold(gray, 0, np.iinfo(type(gray.flat[0])).max, cv2.THRESH_OTSU)
-                
+                    gray = np.asarray(cropped)
+                thresh=threshold_otsu(gray,np.iinfo(type(gray.flat[0])).max)
                 CroppedEdgeLeft,CroppedEdgeRight=linedge(gray,thresh)
                 EdgeLeft=CroppedEdgeLeft+horizontalCropOffset
                 EdgeRight=CroppedEdgeRight+horizontalCropOffset
@@ -393,4 +392,3 @@ def main():
 
 if __name__ == '__main__':         
     main()
-    
