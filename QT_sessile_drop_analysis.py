@@ -164,6 +164,7 @@ class OpencvCamera(FrameSupply):
         Get the last frame
         :return:
         """
+        self.nframes=len(self.framebuffer)
         if len(self.framebuffer)>=1:
             
             return self.framebuffer.pop(0),self.framecaptime.pop(0)
@@ -195,7 +196,6 @@ class OpencvCamera(FrameSupply):
             ret, org_frame = self.cap.read()
             self.framebuffer.append(cv2.cvtColor(org_frame, cv2.COLOR_BGR2RGB))
             self.framecaptime.append(np.datetime64(datetime.datetime.now()))
-            self.nframes=len(self.framebuffer)
             self.frameready = True
         self.cap.release()
         self.is_running = False
