@@ -42,4 +42,8 @@ def analysis(edgeleft,edgeright,baseinput,framesize,k=100,PO=2):
     baseradius=(edgeright[np.int(min(np.floor(leftcontact.y),np.floor(rightcontact.y)))]-edgeleft[np.int(min(np.floor(leftcontact.y),np.floor(rightcontact.y)))])/2
     dropvolume=dropvolume+.5*np.pi*np.square(baseradius)*slantedbasediff
     
-    return contactpointleft, contactpointright, thetal, thetar, dropvolume
+    rightfitcurve=np.polyval(rightfit,np.arange(k))
+    leftfitcurve=np.polyval(leftfit,np.arange(k))
+    debug=np.array([leftfitcurve,leftcontact.y-np.arange(k),rightfitcurve,rightcontact.y-np.arange(k)])
+    
+    return contactpointleft, contactpointright, thetal, thetar, dropvolume, debug

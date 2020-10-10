@@ -207,6 +207,8 @@ class MainWindow(QtWidgets.QMainWindow):
     updateRightEdge = pyqtSignal(np.ndarray,np.ndarray)
     updatePlotLeft = pyqtSignal(np.ndarray,np.ndarray)
     updatePlotRight = pyqtSignal(np.ndarray,np.ndarray)
+    updateLeftEdgeFit = pyqtSignal(np.ndarray,np.ndarray)
+    updateRightEdgeFit = pyqtSignal(np.ndarray,np.ndarray)
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
         uic.loadUi('Mainwindow.ui', self)
@@ -220,13 +222,20 @@ class MainWindow(QtWidgets.QMainWindow):
         
         self.VideoItem = pg.ImageItem()
         self.RootVidPlot.addItem(self.VideoItem)
-        self.LeftEdgeItem=pg.PlotCurveItem(pen='#ff7f0e')
-        self.RightEdgeItem=pg.PlotCurveItem(pen='#1f77b4')
+        self.LeftEdgeItem=pg.PlotCurveItem(pen=pg.mkPen(color='#ff7f0e', width=2))
+        self.RightEdgeItem=pg.PlotCurveItem(pen=pg.mkPen(color='#1f77b4', width=2))
+        self.LeftEdgeFit=pg.PlotCurveItem(pen=pg.mkPen(color='#ff7f0e', width=4))
+        self.RightEdgeFit=pg.PlotCurveItem(pen=pg.mkPen(color='#1f77b4', width=4))
+        
         self.RootVidPlot.addItem(self.LeftEdgeItem)
         self.RootVidPlot.addItem(self.RightEdgeItem)
+        self.RootVidPlot.addItem(self.RightEdgeFit)
+        self.RootVidPlot.addItem(self.LeftEdgeFit)
         self.updateVideo.connect(self.VideoItem.setImage)
         self.updateLeftEdge.connect(self.LeftEdgeItem.setData)
         self.updateRightEdge.connect(self.RightEdgeItem.setData)
+        self.updateLeftEdgeFit.connect(self.LeftEdgeFit.setData)
+        self.updateRightEdgeFit.connect(self.RightEdgeFit.setData)
         
         self.ThetaLeftPlot=pg.ScatterPlotItem(pen='#ff7f0e',brush='#ff7f0e',symbol='o')
         self.ThetaRightPlot=pg.ScatterPlotItem(pen='#1f77b4',brush='#1f77b4',symbol='o')
@@ -250,6 +259,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.MeasurementResult=pd.DataFrame(columns=['thetaleft', 'thetaright', 'contactpointleft','contactpointright','volume','time'])
 
         self.MaybeSave=False
+        
+        self.kInputDisplayText.setText(str(self.kInputSlider.value()))
     
     def closeEvent(self, event):
         if self.FrameSource.is_running:
@@ -349,7 +360,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 CroppedEdgeLeft,CroppedEdgeRight=linedge(gray,thresh)
                 EdgeLeft=CroppedEdgeLeft+horizontalCropOffset
                 EdgeRight=CroppedEdgeRight+horizontalCropOffset
-                contactpointleft, contactpointright, thetal, thetar, dropvolume = analysis(EdgeLeft,EdgeRight,base,cropped.shape,k=100,PO=2)
+                contactpointleft, contactpointright, thetal, thetar, dropvolume, debuginfo = analysis(EdgeLeft,EdgeRight,base,cropped.shape,k=self.kInputSlider.value(),PO=2)
                 newrow={'thetaleft':thetal, 'thetaright':thetar, 'contactpointleft':contactpointleft,'contactpointright':contactpointright,'volume':dropvolume,'time':framecaptime}
                 self.MeasurementResult=self.MeasurementResult.append(newrow,ignore_index=True)
                 if self.FrameSource.gotcapturetime:
@@ -365,6 +376,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.updateRightEdge.emit(EdgeRight,np.arange(0,len(EdgeRight))+verticalCropOffset)
                 self.updatePlotLeft.emit(plottime,plotleft)
                 self.updatePlotRight.emit(plottime,plotright)
+                self.updateLeftEdgeFit.emit(debuginfo[0,:],verticalCropOffset+debuginfo[1,:])
+                self.updateRightEdgeFit.emit(debuginfo[2,:],verticalCropOffset+debuginfo[3,:])
                 self.MaybeSave=True
             else:
                 sleep(0.001)
