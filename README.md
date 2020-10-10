@@ -1,5 +1,5 @@
 # Python sessile drop analysis
-<a href="hthttps://app.element.io/#/room/#Sessile.Drop.Analysis:matrix.vgorcum.com" target="_new"><img src="https://img.shields.io/static/v1?label=Chat&message=Matrix&color=brightgreen"></a></span></a>
+[![Element Android Matrix room #Sessile.Drop.Analysis:matrix.vgorcum.com](https://img.shields.io/matrix/#Sessile.Drop.Analysis:matrix.vgorcum.com.svg?label=%23#Sessile.Drop.Analysis:matrix.vgorcum.com&logo=matrix&server_fqdn=matrix.vgorcum.com)](https://matrix.to/#/#essile.Drop.Analysis:matrix.vgorcum.com)
 
 Made by Mathijs van Gorcum during his PhD at the Physics of Fluids group of the University of Twente.
 
@@ -11,7 +11,11 @@ We use a subpixel edge detection, either fast, with a linear interpolation betwe
 To find the contact line position and the contact angle the detected edge is fitted with a 3rd order polynomial fit, and the slope of the baseline is also used to calculate the contact angles.
 Note that the drop volume assume cylindrical symmetry and if there is a needle present, the volume of the needle is added.
 
-A GUI using pyqtgraph and pyqt5 is available, as well as a standalone script. The standalone script is probably beneficial when using an IDE like spyder.
+A GUI using pyqtgraph and pyqt5 is available, as well as a standalone script. The old standalone script is probably beneficial when using an IDE like spyder and you want to be able to customize the inner workings of the script.
+
+## Screenshot
+
+![](Screenshot.png)
 
 ## Prerequisites
 The script requires numpy, pandas, scipy, pyqt5, opencv-python, scikit-image, imageio, shapely, pyqtgraph >=0.11.0, and python-magic.
