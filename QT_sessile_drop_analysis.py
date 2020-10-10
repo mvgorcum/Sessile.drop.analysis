@@ -29,6 +29,8 @@ class FrameSupply:
         self.frameready = False
         self.is_running = False
         self.framebuffer=[]
+        self.nframes=0
+        self.framenumber=0
 
     def run(self):
         """
@@ -61,6 +63,7 @@ class OpencvReadVideo(FrameSupply):
     def start(self):
         self.cap = cv2.VideoCapture(self.VideoFile)
         self.is_running = True
+        self.nframes=int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
         
     def stop(self):
         """
@@ -74,10 +77,10 @@ class OpencvReadVideo(FrameSupply):
         return cv2.cvtColor(org_frame, cv2.COLOR_BGR2RGB),0
     
     def getnextframe(self):
-        framenumber = self.cap.get(cv2.CAP_PROP_POS_FRAMES)
+        self.framenumber = self.cap.get(cv2.CAP_PROP_POS_FRAMES)
         ret, org_frame = self.cap.read()
         if ret:
-            return cv2.cvtColor(org_frame, cv2.COLOR_BGR2RGB),framenumber
+            return cv2.cvtColor(org_frame, cv2.COLOR_BGR2RGB),self.framenumber
         else:
             self.is_running=False
             self.stop()
@@ -96,7 +99,7 @@ class ImageReader(FrameSupply):
         self.ImageFile=ImageFile
         self.is_running = False
         self.gotcapturetime=False
-        self.framenumber=-1
+        self.framenumber=0
         
     def start(self):
         self.is_running = True
@@ -115,9 +118,9 @@ class ImageReader(FrameSupply):
         return org_frame, 0
         
     def getnextframe(self):
-        if self.framenumber+1<self.nframes:
-            self.framenumber+=1
+        if self.framenumber<self.nframes:
             org_frame = self.IOReader.get_data(self.framenumber)
+            self.framenumber+=1
             return org_frame,self.framenumber
         else:
             return -1,-1
@@ -192,6 +195,7 @@ class OpencvCamera(FrameSupply):
             ret, org_frame = self.cap.read()
             self.framebuffer.append(cv2.cvtColor(org_frame, cv2.COLOR_BGR2RGB))
             self.framecaptime.append(np.datetime64(datetime.datetime.now()))
+            self.nframes=len(self.framebuffer)
             self.frameready = True
         self.cap.release()
         self.is_running = False
@@ -209,6 +213,7 @@ class MainWindow(QtWidgets.QMainWindow):
     updatePlotRight = pyqtSignal(np.ndarray,np.ndarray)
     updateLeftEdgeFit = pyqtSignal(np.ndarray,np.ndarray)
     updateRightEdgeFit = pyqtSignal(np.ndarray,np.ndarray)
+    updateFrameCount=pyqtSignal(int,int)
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
         uic.loadUi('Mainwindow.ui', self)
@@ -259,8 +264,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.MeasurementResult=pd.DataFrame(columns=['thetaleft', 'thetaright', 'contactpointleft','contactpointright','volume','time'])
 
         self.MaybeSave=False
+        self.kInputSlider.valueChanged.connect(lambda: self.kInputDisplayText.setText('Edgepixels to fit: \n'+str(self.kInputSlider.value())))	
+        self.kInputDisplayText.setText('Edgepixels to fit: \n'+str(self.kInputSlider.value()))
         
-        self.kInputDisplayText.setText(str(self.kInputSlider.value()))
+        self.updateFrameCount.connect(lambda f,n: self.FrameCounterText.setText('Frame: '+str(f)+'/'+str(n)))
     
     def closeEvent(self, event):
         if self.FrameSource.is_running:
@@ -379,6 +386,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.updateLeftEdgeFit.emit(debuginfo[0,:],verticalCropOffset+debuginfo[1,:])
                 self.updateRightEdgeFit.emit(debuginfo[2,:],verticalCropOffset+debuginfo[3,:])
                 self.MaybeSave=True
+                self.updateFrameCount.emit(self.FrameSource.framenumber,self.FrameSource.nframes)
             else:
                 sleep(0.001)
             if (not self.FrameSource.is_running and len(self.FrameSource.framebuffer)<1):

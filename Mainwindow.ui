@@ -54,13 +54,13 @@
         </property>
         <property name="minimumSize">
          <size>
-          <width>140</width>
+          <width>160</width>
           <height>34</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>140</width>
+          <width>160</width>
           <height>33</height>
          </size>
         </property>
@@ -101,13 +101,13 @@
         </property>
         <property name="minimumSize">
          <size>
-          <width>140</width>
+          <width>160</width>
           <height>34</height>
          </size>
         </property>
         <property name="maximumSize">
          <size>
-          <width>140</width>
+          <width>160</width>
           <height>34</height>
          </size>
         </property>
@@ -147,7 +147,7 @@
           </property>
           <property name="minimumSize">
            <size>
-            <width>100</width>
+            <width>120</width>
             <height>34</height>
            </size>
           </property>
@@ -156,6 +156,9 @@
             <width>100</width>
             <height>34</height>
            </size>
+          </property>
+          <property name="placeholderText">
+           <string>Frame: 0/0</string>
           </property>
          </widget>
         </item>
@@ -182,14 +185,14 @@
           </property>
           <property name="minimumSize">
            <size>
-            <width>100</width>
-            <height>34</height>
+            <width>120</width>
+            <height>50</height>
            </size>
           </property>
           <property name="maximumSize">
            <size>
             <width>100</width>
-            <height>34</height>
+            <height>50</height>
            </size>
           </property>
          </widget>
@@ -202,11 +205,14 @@
             <height>0</height>
            </size>
           </property>
+          <property name="toolTip">
+           <string>Set the amount of pixels of the detected edge to use for contact angle measurement</string>
+          </property>
           <property name="minimum">
            <number>2</number>
           </property>
           <property name="maximum">
-           <number>100</number>
+           <number>300</number>
           </property>
           <property name="value">
            <number>40</number>
@@ -231,7 +237,7 @@
      <x>0</x>
      <y>0</y>
      <width>1280</width>
-     <height>32</height>
+     <height>30</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

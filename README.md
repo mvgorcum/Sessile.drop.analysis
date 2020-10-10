@@ -14,7 +14,7 @@ Note that the drop volume assume cylindrical symmetry and if there is a needle p
 A GUI using pyqtgraph and pyqt5 is available, as well as a standalone script. The standalone script is probably beneficial when using an IDE like spyder.
 
 ## Prerequisites
-The script requires numpy >=1.18.0, pandas, scipy, pyqt5, opencv-python, imageio, shapely, pyqtgraph >=0.11.0, and python-magic.
+The script requires numpy, pandas, scipy, pyqt5, opencv-python, scikit-image, imageio, shapely, pyqtgraph >=0.11.0, and python-magic.
 
 ## Running the script
 To use the GUI, run QT_sessile_drop_analysis.py, while the standalone script is in Old scripts/sessile_drop_analysis.py.
