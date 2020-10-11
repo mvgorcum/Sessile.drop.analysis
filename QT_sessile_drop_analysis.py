@@ -264,8 +264,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.MeasurementResult=pd.DataFrame(columns=['thetaleft', 'thetaright', 'contactpointleft','contactpointright','volume','time'])
 
         self.MaybeSave=False
-        self.kInputSlider.valueChanged.connect(lambda: self.kInputDisplayText.setText('Edgepixels to fit: \n'+str(self.kInputSlider.value())))	
-        self.kInputDisplayText.setText('Edgepixels to fit: \n'+str(self.kInputSlider.value()))
+        self.kInputSpinbox.setValue(self.kInputSlider.value())
+        self.kInputSlider.valueChanged.connect(lambda: self.kInputSpinbox.setValue(self.kInputSlider.value()))	
+        self.kInputSpinbox.valueChanged.connect(lambda: self.kInputSlider.setValue(self.kInputSpinbox.value()))	
         
         self.updateFrameCount.connect(lambda f,n: self.FrameCounterText.setText('Frame: '+str(f)+'/'+str(n)))
     
@@ -367,7 +368,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 CroppedEdgeLeft,CroppedEdgeRight=linedge(gray,thresh)
                 EdgeLeft=CroppedEdgeLeft+horizontalCropOffset
                 EdgeRight=CroppedEdgeRight+horizontalCropOffset
-                contactpointleft, contactpointright, thetal, thetar, dropvolume, debuginfo = analysis(EdgeLeft,EdgeRight,base,cropped.shape,k=self.kInputSlider.value(),PO=2)
+                contactpointleft, contactpointright, thetal, thetar, dropvolume, debuginfo = analysis(EdgeLeft,EdgeRight,base,cropped.shape,k=self.kInputSpinbox.value(),PO=2)
                 newrow={'thetaleft':thetal, 'thetaright':thetar, 'contactpointleft':contactpointleft,'contactpointright':contactpointright,'volume':dropvolume,'time':framecaptime}
                 self.MeasurementResult=self.MeasurementResult.append(newrow,ignore_index=True)
                 if self.FrameSource.gotcapturetime:
