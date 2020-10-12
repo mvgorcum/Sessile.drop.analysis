@@ -217,7 +217,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
         uic.loadUi('Mainwindow.ui', self)
-        
+        self.setWindowIcon(QtGui.QIcon('icon.ico'))
         
         self.RootVidPlot=self.VideoWidget.getPlotItem()
         self.RootVidPlot.setAspectLocked(True)
@@ -408,7 +408,9 @@ class MainWindow(QtWidgets.QMainWindow):
     
 def main():
     app = QtWidgets.QApplication(sys.argv)
+    app.setWindowIcon(QtGui.QIcon('icon.ico'))
     main = MainWindow()
+    
     main.show()
     sys.exit(app.exec_())
 
