@@ -18,6 +18,7 @@ A GUI using pyqtgraph and pyqt5 is available, as well as a standalone script. Th
 ![](Screenshot.png)
 
 ## Prerequisites
+If you don't use the precomiled releases you'll need:
 The script requires numpy, pandas, scipy, pyqt5, opencv-python, scikit-image, imageio, shapely, pyqtgraph >=0.11.0, and python-magic.
 
 ## Running the script
