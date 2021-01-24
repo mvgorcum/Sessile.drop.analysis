@@ -13,11 +13,11 @@ import pandas as pd
 import threading
 from time import sleep
 import magic
-from FrameSupply import *
+import FrameSupply
 
 pg.setConfigOptions(imageAxisOrder='row-major')
 
-filetypemap={'image/tiff':ImageReader,'image/jpeg':ImageReader,'image/png':ImageReader,'video/x-msvideo':OpencvReadVideo}
+filetypemap={'image/tiff':FrameSupply.ImageReader,'image/jpeg':FrameSupply.ImageReader,'image/png':FrameSupply.ImageReader,'video/x-msvideo':FrameSupply.OpencvReadVideo}
 
 class MainWindow(QtWidgets.QMainWindow):
     updateVideo = pyqtSignal(np.ndarray)
@@ -74,7 +74,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.StartStopButton.clicked.connect(self.StartStop)
         self.CameraToggleButton.clicked.connect(self.CameraToggle)
         
-        self.FrameSource=FrameSupply()
+        self.FrameSource=FrameSupply.FrameSupply()
         self.MeasurementResult=pd.DataFrame(columns=['thetaleft', 'thetaright', 'contactpointleft','contactpointright','volume','time'])
 
         self.MaybeSave=False
@@ -130,7 +130,7 @@ class MainWindow(QtWidgets.QMainWindow):
     
     def CameraToggle(self):
         if self.CameraToggleButton.isChecked():
-            self.FrameSource=OpencvCamera()
+            self.FrameSource=FrameSupply.OpencvCamera()
             self.FrameSource.start()
             FrameWidth,FrameHeight=self.FrameSource.getframesize()
             self.CropRoi.setPos([FrameWidth*.1,FrameHeight*.1])

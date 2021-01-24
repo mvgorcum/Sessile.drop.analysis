@@ -23,7 +23,7 @@ class FrameSupply:
         self.gotcapturetime=False
         self.framebuffer=[]
         self.nframes=0
-        self.framenumber=0
+        self.framenumber=int(0)
 
     def run(self):
         """
@@ -70,7 +70,7 @@ class OpencvReadVideo(FrameSupply):
         return cv2.cvtColor(org_frame, cv2.COLOR_BGR2RGB),0
     
     def getnextframe(self):
-        self.framenumber = self.cap.get(cv2.CAP_PROP_POS_FRAMES)
+        self.framenumber = int(self.cap.get(cv2.CAP_PROP_POS_FRAMES))
         ret, org_frame = self.cap.read()
         if ret:
             return cv2.cvtColor(org_frame, cv2.COLOR_BGR2RGB),self.framenumber
@@ -92,7 +92,7 @@ class ImageReader(FrameSupply):
         self.ImageFile=ImageFile
         self.is_running = False
         self.gotcapturetime=False
-        self.framenumber=0
+        self.framenumber=int(0)
         
     def start(self):
         self.is_running = True
