@@ -136,8 +136,27 @@ class OpencvCamera(FrameSupply):
         self.keep_running = False
         self.is_running = False
         self.gotcapturetime=True
+        self.resolution=[]
+        self.framerate=[]
 
-    def start(self):
+    def setResolution(self,resolution):
+        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH,resolution[0])
+        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT,resolution[1])
+        if (self.cap.get(cv2.CAP_PROP_FRAME_WIDTH) == resolution[0] & self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)==resolution[1]):
+            self.resolution=resolution
+            return True
+        else:
+            return False
+
+    def setFramerate(self,framerate):
+        self.cap.set(cv2.CAP_PROP_FPS,framerate)
+        if (self.cap.get(cv2.CAP_PROP_FPS) == framerate):
+            self.framerate=framerate
+            return True
+        else:
+            return False
+
+        def start(self):
         """
         Start the camera
         """
@@ -149,8 +168,7 @@ class OpencvCamera(FrameSupply):
         """
         Stop the camera
         """
-        self.keep_running = False
-        
+        self.keep_running = False   
 
     def getnextframe(self):
         """
@@ -177,6 +195,8 @@ class OpencvCamera(FrameSupply):
             return
         self.is_running = True
         self.cap = cv2.VideoCapture(0)
+        self.resolution = [self.cap.get(cv2.CAP_PROP_FRAME_WIDTH),self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)]
+        self.framerate = self.cap.get(cv2.CAP_PROP_FPS)
         if not self.cap.isOpened(): 
             errorpopup=QtGui.QMessageBox()
             errorpopup.setText('Error opening video stream')
