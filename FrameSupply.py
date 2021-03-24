@@ -156,7 +156,7 @@ class OpencvCamera(FrameSupply):
         else:
             return False
 
-        def start(self):
+    def start(self):
         """
         Start the camera
         """
