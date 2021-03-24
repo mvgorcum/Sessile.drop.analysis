@@ -29,6 +29,9 @@ class MainWindow(QtWidgets.QMainWindow):
     updateRightEdgeFit = pyqtSignal(np.ndarray,np.ndarray)
     updateFrameCount=pyqtSignal(int,int)
     def __init__(self, *args, **kwargs):
+        """
+        Initialize the main window, set up all plots, and connect to defined buttons.
+        """
         super(MainWindow, self).__init__(*args, **kwargs)
         uic.loadUi('Mainwindow.ui', self)
         self.setWindowIcon(QtGui.QIcon('icon.ico'))
@@ -210,8 +213,8 @@ class MainWindow(QtWidgets.QMainWindow):
         if  len(self.MeasurementResult.index)>0:
             if not self.FrameSource.gotcapturetime:
                 self.MeasurementResult=self.MeasurementResult.rename(columns={"time": "framenumber"})
-            SaveFileName, _ =QtGui.QFileDialog.getSaveFileName(self,'Save file', '', "Excel Files (*.xlsx);;All Files (*)")
-            self.MeasurementResult.to_excel(SaveFileName)
+            SaveFileName, _ =QtGui.QFileDialog.getSaveFileName(self,'Save file', '', "Excel Files (*.xlsx)")
+            self.MeasurementResult.to_excel(SaveFileName+'.xlsx')
             self.MaybeSave=False
         else:
             errorpopup=QtGui.QMessageBox()
