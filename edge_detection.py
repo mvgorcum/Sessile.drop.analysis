@@ -47,4 +47,4 @@ def errorfunction_subpixel_detection(image,thresh):
         elif edgeright[y]==framesize[1]:
             edgeright[y]=0
 
-    return edgeleft, edgeright;
+    return edgeleft, edgeright

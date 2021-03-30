@@ -45,5 +45,6 @@ def analysis(edgeleft,edgeright,baseinput,framesize,k=100,PO=2):
     rightfitcurve=np.polyval(rightfit,np.arange(k))
     leftfitcurve=np.polyval(leftfit,np.arange(k))
     debug=np.array([leftfitcurve,leftcontact.y-np.arange(k),rightfitcurve,rightcontact.y-np.arange(k)])
+    results={'thetaleft':thetal, 'thetaright':thetar, 'contactpointleft':contactpointleft,'contactpointright':contactpointright,'volume':dropvolume}
     
-    return contactpointleft, contactpointright, thetal, thetar, dropvolume, debug
+    return results, debug

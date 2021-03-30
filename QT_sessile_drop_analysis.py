@@ -14,6 +14,7 @@ import threading
 from time import sleep
 import magic
 import FrameSupply
+import settings
 
 pg.setConfigOptions(imageAxisOrder='row-major')
 
@@ -74,6 +75,7 @@ class MainWindow(QtWidgets.QMainWindow):
         
         self.actionOpen.triggered.connect(self.openCall)
         self.actionSave.triggered.connect(self.SaveResult)
+        self.actionSettings.triggered.connect(self.configSettings)
         self.StartStopButton.clicked.connect(self.StartStop)
         self.CameraToggleButton.clicked.connect(self.CameraToggle)
         
@@ -81,11 +83,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.MeasurementResult=pd.DataFrame(columns=['thetaleft', 'thetaright', 'contactpointleft','contactpointright','volume','time'])
 
         self.MaybeSave=False
+        self.settings=settings.settings(self)
+
+        self.kInputSlider.setValue(self.settings.config['sessiledrop']['defaultfitpixels'])
         self.kInputSpinbox.setValue(self.kInputSlider.value())
         self.kInputSlider.valueChanged.connect(lambda: self.kInputSpinbox.setValue(self.kInputSlider.value()))	
         self.kInputSpinbox.valueChanged.connect(lambda: self.kInputSlider.setValue(self.kInputSpinbox.value()))	
         
         self.updateFrameCount.connect(lambda f,n: self.FrameCounterText.setText('Frame: '+str(f)+'/'+str(n)))
+        
     
     def closeEvent(self, event):
         if self.FrameSource.is_running:
@@ -134,6 +140,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def CameraToggle(self):
         if self.CameraToggleButton.isChecked():
             self.FrameSource=FrameSupply.OpencvCamera()
+            self.FrameSource.setResolution(self.settings.config['opencvcamera']['resolution'])
             self.FrameSource.start()
             FrameWidth,FrameHeight=self.FrameSource.getframesize()
             self.CropRoi.setPos([FrameWidth*.1,FrameHeight*.1])
@@ -184,9 +191,9 @@ class MainWindow(QtWidgets.QMainWindow):
                 CroppedEdgeLeft,CroppedEdgeRight=linedge(gray,thresh)
                 EdgeLeft=CroppedEdgeLeft+horizontalCropOffset
                 EdgeRight=CroppedEdgeRight+horizontalCropOffset
-                contactpointleft, contactpointright, thetal, thetar, dropvolume, debuginfo = analysis(EdgeLeft,EdgeRight,base,cropped.shape,k=self.kInputSpinbox.value(),PO=2)
-                newrow={'thetaleft':thetal, 'thetaright':thetar, 'contactpointleft':contactpointleft,'contactpointright':contactpointright,'volume':dropvolume,'time':framecaptime}
-                self.MeasurementResult=self.MeasurementResult.append(newrow,ignore_index=True)
+                results, debuginfo = analysis(EdgeLeft,EdgeRight,base,cropped.shape,k=self.kInputSpinbox.value(),PO=self.settings.config['sessiledrop']['polyfitorder'])
+                results.update({'time':framecaptime})
+                self.MeasurementResult=self.MeasurementResult.append(results,ignore_index=True)
                 if self.FrameSource.gotcapturetime:
                     plottime=self.MeasurementResult['time']-self.MeasurementResult.iloc[0]['time']
                     #convert from nanoseconds to seconds
@@ -195,7 +202,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     plottime=self.MeasurementResult['time'].to_numpy()
                 plotleft=self.MeasurementResult['thetaleft'].to_numpy()
                 plotright=self.MeasurementResult['thetaright'].to_numpy()
-                self.MeasurementResult=self.MeasurementResult.append(newrow,ignore_index=True)
+                self.MeasurementResult=self.MeasurementResult.append(results,ignore_index=True)
                 self.updateLeftEdge.emit(EdgeLeft,np.arange(0,len(EdgeLeft))+verticalCropOffset)
                 self.updateRightEdge.emit(EdgeRight,np.arange(0,len(EdgeRight))+verticalCropOffset)
                 self.updatePlotLeft.emit(plottime,plotleft)
@@ -221,6 +228,9 @@ class MainWindow(QtWidgets.QMainWindow):
             errorpopup.setText('Nothing to save')
             errorpopup.setStandardButtons(QtGui.QMessageBox.Ok)
             errorpopup.exec_()
+
+    def configSettings(self):
+        self.settings.show()
     
 def main():
     app = QtWidgets.QApplication(sys.argv)
