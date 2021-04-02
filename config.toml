@@ -1,6 +1,6 @@
 [opencvcamera]
 framerate = 30.0
-resolution = [ 320, 180,]
+resolution = [ 640, 480,]
 
 [edgedetection]
 subpixelscheme = "Linear"

@@ -6,7 +6,7 @@ import pyqtgraph as pg
 import sys
 from pathlib import Path
 from skimage.filters import threshold_otsu
-from edge_detection import linear_subpixel_detection as linedge
+from edge_detection import subpixel_detection as edgedetection
 from edge_analysis import analysis
 import numpy as np
 import pandas as pd
@@ -142,6 +142,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.FrameSource=FrameSupply.OpencvCamera()
             sleep(0.1)
             self.FrameSource.setResolution(self.settings.config['opencvcamera']['resolution'])
+            self.FrameSource.setFramerate(self.settings.config['opencvcamera']['framerate'])
             self.FrameSource.start()
             FrameWidth,FrameHeight=self.FrameSource.getframesize()
             self.CropRoi.setPos([FrameWidth*.1,FrameHeight*.1])
@@ -189,7 +190,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 else:
                     gray = np.asarray(cropped)
                 thresh=threshold_otsu(gray,np.iinfo(type(gray.flat[0])).max)
-                CroppedEdgeLeft,CroppedEdgeRight=linedge(gray,thresh)
+                CroppedEdgeLeft,CroppedEdgeRight=edgedetection(gray,thresh,self.settings.config['edgedetection']['subpixelscheme'])
                 EdgeLeft=CroppedEdgeLeft+horizontalCropOffset
                 EdgeRight=CroppedEdgeRight+horizontalCropOffset
                 results, debuginfo = analysis(EdgeLeft,EdgeRight,base,cropped.shape,k=self.kInputSpinbox.value(),PO=self.settings.config['sessiledrop']['polyfitorder'])
