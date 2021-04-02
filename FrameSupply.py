@@ -138,11 +138,12 @@ class OpencvCamera(FrameSupply):
         self.gotcapturetime=True
         self.resolution=[]
         self.framerate=[]
+        self.cap = cv2.VideoCapture(0)
 
     def setResolution(self,resolution):
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH,resolution[0])
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT,resolution[1])
-        if (self.cap.get(cv2.CAP_PROP_FRAME_WIDTH) == resolution[0] & self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)==resolution[1]):
+        if ((self.cap.get(cv2.CAP_PROP_FRAME_WIDTH) == resolution[0]) & (self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)==resolution[1])):
             self.resolution=resolution
             return True
         else:
@@ -194,7 +195,6 @@ class OpencvCamera(FrameSupply):
             print("already running")
             return
         self.is_running = True
-        self.cap = cv2.VideoCapture(0)
         self.resolution = [self.cap.get(cv2.CAP_PROP_FRAME_WIDTH),self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)]
         self.framerate = self.cap.get(cv2.CAP_PROP_FPS)
         if not self.cap.isOpened(): 

@@ -140,6 +140,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def CameraToggle(self):
         if self.CameraToggleButton.isChecked():
             self.FrameSource=FrameSupply.OpencvCamera()
+            sleep(0.1)
             self.FrameSource.setResolution(self.settings.config['opencvcamera']['resolution'])
             self.FrameSource.start()
             FrameWidth,FrameHeight=self.FrameSource.getframesize()
