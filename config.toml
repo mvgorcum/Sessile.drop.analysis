@@ -1,9 +1,9 @@
 [opencvcamera]
-framerate = 30.0
-resolution = [ 640, 480,]
+framerate = 15.0
+resolution = [ 1280, 720,]
 
 [edgedetection]
-subpixelscheme = "Linear"
+subpixelscheme = "Errorfunction"
 
 [sessiledrop]
 defaultfitpixels = 40
