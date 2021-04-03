@@ -1,0 +1,11 @@
+[opencvcamera]
+framerate = 30.0
+resolution = [ 640, 480,]
+
+[edgedetection]
+subpixelscheme = "Linear"
+
+[sessiledrop]
+defaultfitpixels = 40
+fittype = "Polyfit"
+polyfitorder = 2
