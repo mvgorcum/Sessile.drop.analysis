@@ -1,9 +1,10 @@
 [opencvcamera]
-framerate = 15.0
+framerate = 30.0
 resolution = [ 1280, 720,]
+bufferpath = "buffer/buffer.h5"
 
 [edgedetection]
-subpixelscheme = "Errorfunction"
+subpixelscheme = "Linear"
 
 [sessiledrop]
 defaultfitpixels = 40

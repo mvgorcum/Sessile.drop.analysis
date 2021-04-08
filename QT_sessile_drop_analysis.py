@@ -74,10 +74,13 @@ class MainWindow(QtWidgets.QMainWindow):
         
         
         self.actionOpen.triggered.connect(self.openCall)
-        self.actionSave.triggered.connect(self.SaveResult)
+        self.actionSaveData.triggered.connect(self.SaveResult)
         self.actionSettings.triggered.connect(self.configSettings)
         self.StartStopButton.clicked.connect(self.StartStop)
         self.CameraToggleButton.clicked.connect(self.CameraToggle)
+        self.VidRecordButton.clicked.connect(self.recordVid)
+        self.VidRecordButton.hide()
+        self.actionSaveVideo.triggered.connect(self.SaveVideo)
         
         self.FrameSource=FrameSupply.FrameSupply()
         self.MeasurementResult=pd.DataFrame(columns=['thetaleft', 'thetaright', 'contactpointleft','contactpointright','volume','time'])
@@ -96,7 +99,18 @@ class MainWindow(QtWidgets.QMainWindow):
     def closeEvent(self, event):
         if self.FrameSource.is_running:
             self.FrameSource.stop()
+
+    def recordVid(self):
+        if self.VidRecordButton.isChecked():
+            self.FrameSource.record=True
+        else:
+            self.FrameSource.record=False
+        
+    def SaveVideo(self):
+        pass
             
+    def ExportVideo(self):
+        pass
 
 
 
@@ -139,7 +153,13 @@ class MainWindow(QtWidgets.QMainWindow):
     
     def CameraToggle(self):
         if self.CameraToggleButton.isChecked():
+            bufferpath=Path(self.settings.config['opencvcamera']['bufferpath'])
+            bufferpath.parent.mkdir(exist_ok=True)
+            if bufferpath.exists():
+                bufferpath.unlink()
+            self.VidRecordButton.show()
             self.FrameSource=FrameSupply.OpencvCamera()
+            self.FrameSource.bufferpath=bufferpath
             sleep(0.1)
             self.FrameSource.setResolution(self.settings.config['opencvcamera']['resolution'])
             self.FrameSource.setFramerate(self.settings.config['opencvcamera']['framerate'])
@@ -152,6 +172,9 @@ class MainWindow(QtWidgets.QMainWindow):
             CameraThread.start()
             self.MeasurementResult=pd.DataFrame(columns=['thetaleft', 'thetaright', 'contactpointleft','contactpointright','volume','time'])
             self.PlotItem.clear()
+        else:
+
+            self.VidRecordButton.hide()
     
     def CameraCapture(self):
         while self.CameraToggleButton.isChecked():
@@ -183,7 +206,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 baseinput=[[basearray[0,0]-horizontalCropOffset,basearray[1,0]-verticalCropOffset],[basearray[0,-1]-horizontalCropOffset,basearray[1,-1]-verticalCropOffset]]
                 del basearray
                 rightbasepoint=np.argmax([baseinput[0][0],baseinput[1][0]])
-                baseslope=np.float(baseinput[rightbasepoint][1]-baseinput[1-rightbasepoint][1])/(baseinput[rightbasepoint][0]-baseinput[1-rightbasepoint][0])
+                baseslope=np.float64(baseinput[rightbasepoint][1]-baseinput[1-rightbasepoint][1])/(baseinput[rightbasepoint][0]-baseinput[1-rightbasepoint][0])
                 base=np.array([[0,baseinput[0][1]-baseslope*baseinput[0][0]],[org_frame.shape[1],baseslope*org_frame.shape[1]+baseinput[0][1]-baseslope*baseinput[0][0]]])
                 if len(org_frame.shape)==3:
                     gray = cv2.cvtColor(cropped, cv2.COLOR_RGB2GRAY)
@@ -195,7 +218,6 @@ class MainWindow(QtWidgets.QMainWindow):
                 EdgeRight=CroppedEdgeRight+horizontalCropOffset
                 results, debuginfo = analysis(EdgeLeft,EdgeRight,base,cropped.shape,k=self.kInputSpinbox.value(),PO=self.settings.config['sessiledrop']['polyfitorder'])
                 results.update({'time':framecaptime})
-                self.MeasurementResult=self.MeasurementResult.append(results,ignore_index=True)
                 if self.FrameSource.gotcapturetime:
                     plottime=self.MeasurementResult['time']-self.MeasurementResult.iloc[0]['time']
                     #convert from nanoseconds to seconds

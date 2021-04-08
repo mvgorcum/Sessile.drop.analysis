@@ -35,11 +35,11 @@ def linear_subpixel(edgeleft,edgeright,imagerow,thresh):
     """
     if edgeleft!=0:
         #subpixel correction with using corr=(threshold-intensity(edge-1))/(intensity(edge)-intensity(edge-1))
-        leftsubpxcorr=(thresh-np.float_(imagerow[np.int(edgeleft-1)]))/(np.float_(imagerow[np.int(edgeleft)])-np.float_(imagerow[np.int(edgeleft-1)]))-1 
+        leftsubpxcorr=(thresh-np.float64(imagerow[np.int(edgeleft-1)]))/(np.float64(imagerow[np.int(edgeleft)])-np.float64(imagerow[np.int(edgeleft-1)]))-1 
     else:
         leftsubpxcorr=0
     if edgeright!=len(imagerow):
-        rightsubpxcorr=(thresh-np.float_(imagerow[np.int(edgeright-1)]))/(np.float_(imagerow[np.int(edgeright)])-np.float_(imagerow[np.int(edgeright-1)]))-1
+        rightsubpxcorr=(thresh-np.float64(imagerow[np.int(edgeright-1)]))/(np.float64(imagerow[np.int(edgeright)])-np.float64(imagerow[np.int(edgeright-1)]))-1
     else:
         rightsubpxcorr=0
     return leftsubpxcorr,rightsubpxcorr

@@ -44,7 +44,158 @@
       <property name="sizeConstraint">
        <enum>QLayout::SetMinimumSize</enum>
       </property>
-      <item row="3" column="0" rowspan="2">
+      <item row="0" column="0">
+       <layout class="QVBoxLayout" name="verticalLayout_4">
+        <item>
+         <widget class="QPushButton" name="StartStopButton">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>160</width>
+            <height>34</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>160</width>
+            <height>34</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Start Measurement</string>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="CameraToggleButton">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>160</width>
+            <height>34</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>160</width>
+            <height>34</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Live Camera</string>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="VidRecordButton">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>160</width>
+            <height>34</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>160</width>
+            <height>34</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Record Video</string>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QTextBrowser" name="FrameCounterText">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>160</width>
+            <height>34</height>
+           </size>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>160</width>
+            <height>34</height>
+           </size>
+          </property>
+          <property name="placeholderText">
+           <string>Frame: 0/0</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="0" column="2" rowspan="6">
+       <widget class="PlotWidget" name="PlotWidget" native="true">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>561</width>
+          <height>659</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1" rowspan="6">
+       <widget class="PlotWidget" name="VideoWidget" native="true">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>562</width>
+          <height>659</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0" rowspan="5">
        <layout class="QGridLayout" name="gridLayout_3">
         <item row="1" column="1">
          <spacer name="verticalSpacer">
@@ -59,7 +210,24 @@
           </property>
          </spacer>
         </item>
-        <item row="0" column="0" rowspan="4">
+        <item row="3" column="1">
+         <widget class="QSpinBox" name="kInputSpinbox">
+          <property name="toolTip">
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the amount of pixels of the detected edge to use for contact angle measurement&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
+          <property name="maximum">
+           <number>300</number>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="1">
+         <widget class="QLabel" name="Klabel">
+          <property name="text">
+           <string>Edgepixels to fit:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="0" rowspan="3">
          <widget class="QSlider" name="kInputSlider">
           <property name="minimumSize">
            <size>
@@ -87,150 +255,7 @@
           </property>
          </widget>
         </item>
-        <item row="3" column="1">
-         <widget class="QSpinBox" name="kInputSpinbox">
-          <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set the amount of pixels of the detected edge to use for contact angle measurement&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-          </property>
-          <property name="maximum">
-           <number>300</number>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QTextBrowser" name="FrameCounterText">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="minimumSize">
-           <size>
-            <width>120</width>
-            <height>34</height>
-           </size>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>100</width>
-            <height>34</height>
-           </size>
-          </property>
-          <property name="placeholderText">
-           <string>Frame: 0/0</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="1">
-         <widget class="QLabel" name="Klabel">
-          <property name="text">
-           <string>Edgepixels to fit:</string>
-          </property>
-         </widget>
-        </item>
        </layout>
-      </item>
-      <item row="0" column="0">
-       <widget class="QPushButton" name="StartStopButton">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>160</width>
-          <height>34</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>160</width>
-          <height>34</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>Start Measurement</string>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="2" rowspan="5">
-       <widget class="PlotWidget" name="PlotWidget" native="true">
-        <property name="enabled">
-         <bool>true</bool>
-        </property>
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>561</width>
-          <height>659</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1" rowspan="5">
-       <widget class="PlotWidget" name="VideoWidget" native="true">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>562</width>
-          <height>659</height>
-         </size>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QPushButton" name="CameraToggleButton">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>160</width>
-          <height>34</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>160</width>
-          <height>33</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>Live Camera</string>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QPushButton" name="VidRecordButton">
-        <property name="text">
-         <string>Record Video</string>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-       </widget>
       </item>
      </layout>
     </item>
@@ -249,10 +274,18 @@
     <property name="title">
      <string>File</string>
     </property>
+    <widget class="QMenu" name="menuSave">
+     <property name="title">
+      <string>Save</string>
+     </property>
+     <addaction name="actionSaveData"/>
+     <addaction name="actionSaveVideo"/>
+     <addaction name="actionExportVideo"/>
+    </widget>
     <addaction name="actionNewMeasurement"/>
     <addaction name="actionOpen"/>
     <addaction name="separator"/>
-    <addaction name="actionSave"/>
+    <addaction name="menuSave"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
@@ -274,14 +307,29 @@
     <string>Open</string>
    </property>
   </action>
-  <action name="actionSave">
+  <action name="actionSaveData">
    <property name="text">
-    <string>Save</string>
+    <string>Save Data</string>
    </property>
   </action>
   <action name="actionSettings">
    <property name="text">
     <string>Settings</string>
+   </property>
+  </action>
+  <action name="actionSaveVideo">
+   <property name="text">
+    <string>Save Video</string>
+   </property>
+  </action>
+  <action name="actionTest">
+   <property name="text">
+    <string>Test</string>
+   </property>
+  </action>
+  <action name="actionExportVideo">
+   <property name="text">
+    <string>Export Video</string>
    </property>
   </action>
  </widget>

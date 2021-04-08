@@ -30,6 +30,7 @@ class settings(QtGui.QDialog):
         self.fittype.setCurrentIndex(self.fittype.findData(self.config['sessiledrop']['fittype']))
         self.polyfitorder.setValue(self.config['sessiledrop']['polyfitorder'])
         self.defaultfitheight.setValue(self.config['sessiledrop']['defaultfitpixels'])
+        self.BufferPathDisplay.setText(self.config['opencvcamera']['bufferpath'])
 
     def _showhidepolyorder(self):
         if self.fittype.currentText() == "Polyfit":
@@ -64,6 +65,7 @@ class settings(QtGui.QDialog):
     def _saveconfig(self):
         self.config['opencvcamera']['framerate']=self.framerate.value()
         self.config['opencvcamera']['resolution']=self.chooseresolution.currentData()
+        self.config['opencvcamera']['bufferpath']=self.BufferPathDisplay.toPlainText()
         self.config['edgedetection']['subpixelscheme']=self.subpixelmethod.currentData()
         self.config['sessiledrop']['fittype']=self.fittype.currentData()
         self.config['sessiledrop']['polyfitorder']=self.polyfitorder.value()

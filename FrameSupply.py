@@ -11,6 +11,9 @@ import numpy as np
 from time import sleep
 from PyQt5 import QtGui
 import datetime
+import h5py
+
+
 
 class FrameSupply:
     """
@@ -139,6 +142,10 @@ class OpencvCamera(FrameSupply):
         self.resolution=[]
         self.framerate=[]
         self.cap = cv2.VideoCapture(0)
+        self.record = False
+        self.bufferpath='buffer/buffer.h5'
+        recFrameCount=0
+
 
     def setResolution(self,resolution):
         self.cap.set(cv2.CAP_PROP_FRAME_WIDTH,resolution[0])
@@ -197,6 +204,8 @@ class OpencvCamera(FrameSupply):
         self.is_running = True
         self.resolution = [self.cap.get(cv2.CAP_PROP_FRAME_WIDTH),self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)]
         self.framerate = self.cap.get(cv2.CAP_PROP_FPS)
+        firstrec=True
+
         if not self.cap.isOpened(): 
             errorpopup=QtGui.QMessageBox()
             errorpopup.setText('Error opening video stream')
@@ -206,9 +215,26 @@ class OpencvCamera(FrameSupply):
             self.is_running = False
             self.keep_running = False
         while self.keep_running:
-            ret, org_frame = self.cap.read()
+            _, org_frame = self.cap.read()
             self.framebuffer.append(cv2.cvtColor(org_frame, cv2.COLOR_BGR2RGB))
             self.framecaptime.append(np.datetime64(datetime.datetime.now()))
             self.frameready = True
+            if self.record:
+                if firstrec:
+                    recFrameCount=0
+                    bufferfile = h5py.File(self.bufferpath,'w')
+                    group=bufferfile.create_group("Frames")
+                    infoset=group.create_dataset('info',dtype=h5py.special_dtype(vlen=str))
+                    firstrec=False
+                framedataset=group.create_dataset('frame'+str(recFrameCount),np.shape(org_frame),dtype='u8')
+                framedataset.attrs.create('CLASS','IMAGE')
+                framedataset.attrs.create('IMAGE_VERSION','1.2')
+                framedataset.attrs.create('INTERLACE_MODE','INTERLACE_PIXEL')
+                framedataset.attrs.create('DISPLAY_ORIGIN',"UL")
+                framedataset[:,:,:]=np.uint8(org_frame)
+                recFrameCount+=1
+
+
+
         self.cap.release()
         self.is_running = False
