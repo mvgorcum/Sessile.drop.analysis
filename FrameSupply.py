@@ -12,6 +12,7 @@ from time import sleep
 from PyQt5 import QtGui
 import datetime
 import h5py
+import json
 
 
 
@@ -86,9 +87,60 @@ class OpencvReadVideo(FrameSupply):
         return self.cap.get(cv2.CAP_PROP_FRAME_WIDTH),self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
     
 
+class Hdf5Reader(FrameSupply):
+    """
+    Read the hdf5 files that can be saved from opencv camera framesource
+    """
+    def __init__(self,Hdf5File):
+        super().__init__()
+        self.is_running = False
+        self.framenumber=int(0)
+        self.Hdf5File=Hdf5File
+    
+    def start(self):
+        self.is_running = True
+        self.Hdf5File=h5py.File(self.Hdf5File,'r')
+        self.info=json.loads(self.Hdf5File['Frames'].attrs.get('info'))
+        self.nframes=len(self.info['savedframes'])
+        if 'TIMESTAMP' in self.info['attributes']:
+            self.gotcapturetime=True
+        else:
+            self.gotcapturetime=False
+ 
+    def stop(self):
+        """
+        Stop the feed
+        """
+        self.is_running = False
+        self.Hdf5File.close()
+    
+    def getfirstframe(self):
+        org_frame=np.uint8(self.Hdf5File['Frames'][self.info['savedframes'][0]][:])
+        if self.gotcapturetime:
+            timestamp=self.Hdf5File['Frames'][self.info['savedframes'][0]].attrs.get('TIMESTAMP')
+        else:
+            timestamp=0
+        return org_frame, timestamp
+        
+    def getnextframe(self):
+        if self.framenumber<self.nframes:
+            org_frame=np.uint8(self.Hdf5File['Frames'][self.info['savedframes'][self.framenumber]][:])
+            if self.gotcapturetime:
+                timestamp=self.Hdf5File['Frames'][self.info['savedframes'][self.framenumber]].attrs.get('TIMESTAMP')
+            else:
+                timestamp=self.framenumber
+            self.framenumber+=1
+            return org_frame,timestamp
+        else:
+            return -1,-1
+        
+    def getframesize(self):
+        return self.info['dimensions'][1],self.info['dimensions'][0]
+
+
 class ImageReader(FrameSupply):
     """
-    Read videofile with OpenCV
+    Read Images with imageio
     """
     def __init__(self,ImageFile):
         super().__init__()
@@ -217,22 +269,31 @@ class OpencvCamera(FrameSupply):
         while self.keep_running:
             _, org_frame = self.cap.read()
             self.framebuffer.append(cv2.cvtColor(org_frame, cv2.COLOR_BGR2RGB))
-            self.framecaptime.append(np.datetime64(datetime.datetime.now()))
+            capturetime=np.datetime64(datetime.datetime.now())
+            self.framecaptime.append(capturetime)
             self.frameready = True
             if self.record:
                 if firstrec:
+                    datasetname=[]
                     recFrameCount=0
                     bufferfile = h5py.File(self.bufferpath,'w')
                     group=bufferfile.create_group("Frames")
-                    infoset=group.create_dataset('info',dtype=h5py.special_dtype(vlen=str))
+                    #infoset=group.create_dataset('info',dtype=h5py.special_dtype(vlen=str))
                     firstrec=False
-                framedataset=group.create_dataset('frame'+str(recFrameCount),np.shape(org_frame),dtype='u8')
+                datasetname.append('frame'+str(recFrameCount))
+                framedataset=group.create_dataset(datasetname[-1],np.shape(org_frame),dtype='u8',compression="lzf")
                 framedataset.attrs.create('CLASS','IMAGE')
                 framedataset.attrs.create('IMAGE_VERSION','1.2')
                 framedataset.attrs.create('INTERLACE_MODE','INTERLACE_PIXEL')
                 framedataset.attrs.create('DISPLAY_ORIGIN',"UL")
+                framedataset.attrs.create('TIMESTAMP',np.float64(capturetime))
                 framedataset[:,:,:]=np.uint8(org_frame)
                 recFrameCount+=1
+            elif not firstrec:
+                info=dict(dimensions=np.shape(org_frame),savedframes=datasetname,attributes=['TIMESTAMP'],framerate=self.framerate)
+                group.attrs.create('info',json.dumps(info))
+        if not firstrec:
+            bufferfile.close()      
 
 
 

@@ -1,5 +1,5 @@
 from PyQt5 import QtWidgets, uic, QtGui
-from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtCore import pyqtSignal, Qt
 
 import cv2
 import pyqtgraph as pg
@@ -15,10 +15,14 @@ from time import sleep
 import magic
 import FrameSupply
 import settings
+import json
+import h5py
 
 pg.setConfigOptions(imageAxisOrder='row-major')
 
-filetypemap={'image/tiff':FrameSupply.ImageReader,'image/jpeg':FrameSupply.ImageReader,'image/png':FrameSupply.ImageReader,'video/x-msvideo':FrameSupply.OpencvReadVideo}
+filetypemap={'image/tiff':FrameSupply.ImageReader,'image/jpeg':FrameSupply.ImageReader,'image/png':FrameSupply.ImageReader,
+             'video/x-msvideo':FrameSupply.OpencvReadVideo,
+             'application/x-hdf':FrameSupply.Hdf5Reader}
 
 class MainWindow(QtWidgets.QMainWindow):
     updateVideo = pyqtSignal(np.ndarray)
@@ -81,6 +85,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.VidRecordButton.clicked.connect(self.recordVid)
         self.VidRecordButton.hide()
         self.actionSaveVideo.triggered.connect(self.SaveVideo)
+        self.actionExportVideo.triggered.connect(self.ExportVideo)
         
         self.FrameSource=FrameSupply.FrameSupply()
         self.MeasurementResult=pd.DataFrame(columns=['thetaleft', 'thetaright', 'contactpointleft','contactpointright','volume','time'])
@@ -106,13 +111,6 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             self.FrameSource.record=False
         
-    def SaveVideo(self):
-        pass
-            
-    def ExportVideo(self):
-        pass
-
-
 
     def openCall(self):
         if self.FrameSource.is_running:
@@ -218,6 +216,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 EdgeRight=CroppedEdgeRight+horizontalCropOffset
                 results, debuginfo = analysis(EdgeLeft,EdgeRight,base,cropped.shape,k=self.kInputSpinbox.value(),PO=self.settings.config['sessiledrop']['polyfitorder'])
                 results.update({'time':framecaptime})
+                self.MeasurementResult=self.MeasurementResult.append(results,ignore_index=True)
                 if self.FrameSource.gotcapturetime:
                     plottime=self.MeasurementResult['time']-self.MeasurementResult.iloc[0]['time']
                     #convert from nanoseconds to seconds
@@ -226,7 +225,6 @@ class MainWindow(QtWidgets.QMainWindow):
                     plottime=self.MeasurementResult['time'].to_numpy()
                 plotleft=self.MeasurementResult['thetaleft'].to_numpy()
                 plotright=self.MeasurementResult['thetaright'].to_numpy()
-                self.MeasurementResult=self.MeasurementResult.append(results,ignore_index=True)
                 self.updateLeftEdge.emit(EdgeLeft,np.arange(0,len(EdgeLeft))+verticalCropOffset)
                 self.updateRightEdge.emit(EdgeRight,np.arange(0,len(EdgeRight))+verticalCropOffset)
                 self.updatePlotLeft.emit(plottime,plotleft)
@@ -241,7 +239,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 break
             
     def SaveResult(self):
-        if  len(self.MeasurementResult.index)>0:
+        if len(self.MeasurementResult.index)>0:
             if not self.FrameSource.gotcapturetime:
                 self.MeasurementResult=self.MeasurementResult.rename(columns={"time": "framenumber"})
             SaveFileName, _ =QtGui.QFileDialog.getSaveFileName(self,'Save file', '', "Excel Files (*.xlsx)")
@@ -255,6 +253,38 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def configSettings(self):
         self.settings.show()
+    
+    def SaveVideo(self):
+        if not self.VidRecordButton.isChecked():
+            if hasattr(self.FrameSource, 'bufferpath') and Path(self.FrameSource.bufferpath).exists():
+                SaveFileName, _ =QtGui.QFileDialog.getSaveFileName(self,'Save file', '', "Recorded frames (*.h5)")
+                Path(self.FrameSource.bufferpath).rename(SaveFileName)
+            
+    def ExportVideo(self):
+        if not self.VidRecordButton.isChecked():
+            if hasattr(self.FrameSource, 'bufferpath') and Path(self.FrameSource.bufferpath).exists():
+                file=h5py.File(self.FrameSource.bufferpath,'r')
+                info=json.loads(file['Frames'].attrs.get('info'))
+                SaveFileName, _ =QtGui.QFileDialog.getSaveFileName(self,'Export Video', '', "Recorded frames (*.mp4)")
+                SaveFileName=SaveFileName+'.mp4'
+                fourcc=cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
+                writer=cv2.VideoWriter(SaveFileName,fourcc,info['framerate'],(info['dimensions'][1],info['dimensions'][0]))
+                totalframes=len(info['savedframes'])
+                progress=QtGui.QProgressDialog("Saving Video...", "Abort", 0,totalframes , self)
+                progress.setWindowModality(Qt.WindowModal)
+                sleep(0.1)
+                for i,frame in enumerate(info['savedframes']):
+                    writer.write(np.uint8(file['Frames'][frame][:]))
+                    progress.setValue(i)
+                    if progress.wasCanceled():
+                        break
+                    
+                progress.setValue(totalframes)
+                writer.release()
+        else:
+            print('Still recording, cant save now')
+
+
     
 def main():
     app = QtWidgets.QApplication(sys.argv)
