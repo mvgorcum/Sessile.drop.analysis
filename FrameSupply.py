@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Framesupply classes used for reading out various formats and cameras.
 """

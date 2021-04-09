@@ -240,8 +240,16 @@ class MainWindow(QtWidgets.QMainWindow):
         if len(self.MeasurementResult.index)>0:
             if not self.FrameSource.gotcapturetime:
                 self.MeasurementResult=self.MeasurementResult.rename(columns={"time": "framenumber"})
-            SaveFileName, _ =QtGui.QFileDialog.getSaveFileName(self,'Save file', '', "Excel Files (*.xlsx)")
-            self.MeasurementResult.to_excel(SaveFileName+'.xlsx')
+            SaveFileName, selectedtype =QtGui.QFileDialog.getSaveFileName(self,'Save file', '', "CSV Files (*.csv);;Excel Files (*.xlsx)")
+            if selectedtype=='CSV Files (*.csv)':
+                if Path(SaveFileName).suffix=='':
+                    SaveFileName=SaveFileName+'.csv'
+                self.MeasurementResult.to_csv(SaveFileName,index=False)
+            elif selectedtype=='Excel Files (*.xlsx)':
+                if Path(SaveFileName).suffix=='':
+                    SaveFileName=SaveFileName+'.xlsx'
+                self.MeasurementResult.to_excel(SaveFileName,index=False)
+                
             self.MaybeSave=False
         else:
             errorpopup=QtGui.QMessageBox()
@@ -257,10 +265,15 @@ class MainWindow(QtWidgets.QMainWindow):
             if hasattr(self.FrameSource, 'bufferpath') and Path(self.FrameSource.bufferpath).exists():
                 SaveFileName, _ =QtGui.QFileDialog.getSaveFileName(self,'Save file', '', "Recorded frames (*.h5)")
                 Path(self.FrameSource.bufferpath).rename(SaveFileName)
+            else:
+                errorpopup=QtGui.QMessageBox()
+                errorpopup.setText('No video has been recorded')
+                errorpopup.setStandardButtons(QtGui.QMessageBox.Ok)
+                errorpopup.exec_()
             
     def ExportVideo(self):
         if not self.VidRecordButton.isChecked():
-            if hasattr(self.FrameSource, 'bufferpath'):
+            if hasattr(self.FrameSource, 'bufferpath') and Path(self.FrameSource.bufferpath).exists():
                 exportsource=FrameSupply.Hdf5Reader(self.FrameSource.bufferpath)
                 exportsource.start()
             elif self.CameraToggleButton.isChecked():
@@ -272,7 +285,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 exportsource=self.FrameSource
             exportsource.framenumber=int(0)
             SaveFileName, _ =QtGui.QFileDialog.getSaveFileName(self,'Export Video', '', "Recorded frames (*.mp4)")
-            SaveFileName=SaveFileName+'.mp4'
+            if Path(SaveFileName).suffix =='':
+                SaveFileName=SaveFileName+'.mp4'
             fourcc=cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
             resolution=exportsource.getframesize()
             fps=exportsource.framerate
