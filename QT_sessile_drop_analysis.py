@@ -264,6 +264,8 @@ class MainWindow(QtWidgets.QMainWindow):
         if not self.VidRecordButton.isChecked():
             if hasattr(self.FrameSource, 'bufferpath') and Path(self.FrameSource.bufferpath).exists():
                 SaveFileName, _ =QtGui.QFileDialog.getSaveFileName(self,'Save file', '', "Recorded frames (*.h5)")
+                if Path(SaveFileName).suffix=='':
+                    SaveFileName=SaveFileName+'.h5'
                 Path(self.FrameSource.bufferpath).rename(SaveFileName)
             else:
                 errorpopup=QtGui.QMessageBox()
