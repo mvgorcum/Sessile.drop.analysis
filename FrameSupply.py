@@ -28,6 +28,7 @@ class FrameSupply:
         self.framebuffer=[]
         self.nframes=0
         self.framenumber=int(0)
+        self.framerate=30
 
     def run(self):
         """
@@ -94,7 +95,6 @@ class Hdf5Reader(FrameSupply):
     def __init__(self,Hdf5File):
         super().__init__()
         self.is_running = False
-        self.framenumber=int(0)
         self.Hdf5File=Hdf5File
     
     def start(self):
@@ -102,6 +102,7 @@ class Hdf5Reader(FrameSupply):
         self.Hdf5File=h5py.File(self.Hdf5File,'r')
         self.info=json.loads(self.Hdf5File['Frames'].attrs.get('info'))
         self.nframes=len(self.info['savedframes'])
+        self.framerate=self.info['framerate']
         if 'TIMESTAMP' in self.info['attributes']:
             self.gotcapturetime=True
         else:
@@ -147,7 +148,6 @@ class ImageReader(FrameSupply):
         self.ImageFile=ImageFile
         self.is_running = False
         self.gotcapturetime=False
-        self.framenumber=int(0)
         
     def start(self):
         self.is_running = True
@@ -192,7 +192,6 @@ class OpencvCamera(FrameSupply):
         self.is_running = False
         self.gotcapturetime=True
         self.resolution=[]
-        self.framerate=[]
         self.cap = cv2.VideoCapture(0)
         self.record = False
         self.bufferpath='buffer/buffer.h5'

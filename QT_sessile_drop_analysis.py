@@ -15,13 +15,11 @@ from time import sleep
 import magic
 import FrameSupply
 import settings
-import json
-import h5py
 
 pg.setConfigOptions(imageAxisOrder='row-major')
 
 filetypemap={'image/tiff':FrameSupply.ImageReader,'image/jpeg':FrameSupply.ImageReader,'image/png':FrameSupply.ImageReader,
-             'video/x-msvideo':FrameSupply.OpencvReadVideo,
+             'video/x-msvideo':FrameSupply.OpencvReadVideo,'video/mp4':FrameSupply.OpencvReadVideo,
              'application/x-hdf':FrameSupply.Hdf5Reader}
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -262,25 +260,37 @@ class MainWindow(QtWidgets.QMainWindow):
             
     def ExportVideo(self):
         if not self.VidRecordButton.isChecked():
-            if hasattr(self.FrameSource, 'bufferpath') and Path(self.FrameSource.bufferpath).exists():
-                file=h5py.File(self.FrameSource.bufferpath,'r')
-                info=json.loads(file['Frames'].attrs.get('info'))
-                SaveFileName, _ =QtGui.QFileDialog.getSaveFileName(self,'Export Video', '', "Recorded frames (*.mp4)")
-                SaveFileName=SaveFileName+'.mp4'
-                fourcc=cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
-                writer=cv2.VideoWriter(SaveFileName,fourcc,info['framerate'],(info['dimensions'][1],info['dimensions'][0]))
-                totalframes=len(info['savedframes'])
-                progress=QtGui.QProgressDialog("Saving Video...", "Abort", 0,totalframes , self)
-                progress.setWindowModality(Qt.WindowModal)
-                sleep(0.1)
-                for i,frame in enumerate(info['savedframes']):
-                    writer.write(np.uint8(file['Frames'][frame][:]))
-                    progress.setValue(i)
-                    if progress.wasCanceled():
-                        break
-                    
-                progress.setValue(totalframes)
-                writer.release()
+            if hasattr(self.FrameSource, 'bufferpath'):
+                exportsource=FrameSupply.Hdf5Reader(self.FrameSource.bufferpath)
+                exportsource.start()
+            elif self.CameraToggleButton.isChecked():
+                errorpopup=QtGui.QMessageBox()
+                errorpopup.setText('No video has been recorded')
+                errorpopup.setStandardButtons(QtGui.QMessageBox.Ok)
+                errorpopup.exec_()
+            else:
+                exportsource=self.FrameSource
+            exportsource.framenumber=int(0)
+            SaveFileName, _ =QtGui.QFileDialog.getSaveFileName(self,'Export Video', '', "Recorded frames (*.mp4)")
+            SaveFileName=SaveFileName+'.mp4'
+            fourcc=cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
+            resolution=exportsource.getframesize()
+            fps=exportsource.framerate
+            writer=cv2.VideoWriter(SaveFileName,fourcc,fps,(int(resolution[0]),int(resolution[1])))
+            totalframes=exportsource.nframes
+            progress=QtGui.QProgressDialog("Saving Video...", "Abort", 0,totalframes , self)
+            progress.setWindowModality(Qt.WindowModal)
+            sleep(0.1)
+            for i in range(totalframes):
+                print(i)
+                frame,_=exportsource.getnextframe()
+                writer.write(np.uint8(frame))
+                progress.setValue(i)
+                if progress.wasCanceled():
+                    break
+                
+            progress.setValue(totalframes)
+            writer.release()
         else:
             print('Still recording, cant save now')
 
