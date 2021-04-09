@@ -1,6 +1,7 @@
 import toml
 from PyQt5 import QtWidgets, uic, QtGui
 import os
+from pathlib import Path
 
 class settings(QtGui.QDialog):
     def __init__(self, parent=None):
@@ -11,6 +12,7 @@ class settings(QtGui.QDialog):
         self.autodetectresolution.clicked.connect(self._detectres)
         self.fittype.activated[str].connect(self._showhidepolyorder)
         self.tryframerate.clicked.connect(self._tryframerate)
+        self.ChangeBufferPath.clicked.connect(self._changebufferpath)
         self._setguioptions()
 
     def _detectres(self):
@@ -72,6 +74,16 @@ class settings(QtGui.QDialog):
         self.config['sessiledrop']['defaultfitpixels']=self.defaultfitheight.value()
         with open("config.toml",'w') as configfile:
             toml.dump(self.config,configfile)
+
+    def _changebufferpath(self):
+        SaveFileName, _ =QtGui.QFileDialog.getSaveFileName(self,'Buffer file location', '', "Buffer file (*.h5)")
+        if SaveFileName=='':
+            return
+        if Path(SaveFileName).suffix =='':
+            SaveFileName=SaveFileName+'.h5'
+        self.config['opencvcamera']['bufferpath']=SaveFileName
+        self.BufferPathDisplay.setText(self.config['opencvcamera']['bufferpath'])
+
 
       
 def detect_resolutions():
