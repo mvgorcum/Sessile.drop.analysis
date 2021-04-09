@@ -241,7 +241,6 @@ class MainWindow(QtWidgets.QMainWindow):
             if not self.FrameSource.gotcapturetime:
                 self.MeasurementResult=self.MeasurementResult.rename(columns={"time": "framenumber"})
             SaveFileName, selectedtype =QtGui.QFileDialog.getSaveFileName(self,'Save file', '', "CSV Files (*.csv);;Excel Files (*.xlsx)")
-            print(SaveFileName)
             if SaveFileName=='':
                 return
             if selectedtype=='CSV Files (*.csv)':
@@ -277,6 +276,11 @@ class MainWindow(QtWidgets.QMainWindow):
                 errorpopup.setText('No video has been recorded')
                 errorpopup.setStandardButtons(QtGui.QMessageBox.Ok)
                 errorpopup.exec_()
+        else:
+            errorpopup=QtGui.QMessageBox()
+            errorpopup.setText("Can't save video while recording is running")
+            errorpopup.setStandardButtons(QtGui.QMessageBox.Ok)
+            errorpopup.exec_()
             
     def ExportVideo(self):
         if not self.VidRecordButton.isChecked():
@@ -305,7 +309,6 @@ class MainWindow(QtWidgets.QMainWindow):
             progress.setWindowModality(Qt.WindowModal)
             sleep(0.1)
             for i in range(totalframes):
-                print(i)
                 frame,_=exportsource.getnextframe()
                 writer.write(np.uint8(frame))
                 progress.setValue(i)
@@ -315,7 +318,10 @@ class MainWindow(QtWidgets.QMainWindow):
             progress.setValue(totalframes)
             writer.release()
         else:
-            print('Still recording, cant save now')
+            errorpopup=QtGui.QMessageBox()
+            errorpopup.setText("Can't export video while recording is running")
+            errorpopup.setStandardButtons(QtGui.QMessageBox.Ok)
+            errorpopup.exec_()   
 
 
     
