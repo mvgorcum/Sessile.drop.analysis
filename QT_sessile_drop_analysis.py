@@ -241,6 +241,9 @@ class MainWindow(QtWidgets.QMainWindow):
             if not self.FrameSource.gotcapturetime:
                 self.MeasurementResult=self.MeasurementResult.rename(columns={"time": "framenumber"})
             SaveFileName, selectedtype =QtGui.QFileDialog.getSaveFileName(self,'Save file', '', "CSV Files (*.csv);;Excel Files (*.xlsx)")
+            print(SaveFileName)
+            if SaveFileName=='':
+                return
             if selectedtype=='CSV Files (*.csv)':
                 if Path(SaveFileName).suffix=='':
                     SaveFileName=SaveFileName+'.csv'
@@ -264,6 +267,8 @@ class MainWindow(QtWidgets.QMainWindow):
         if not self.VidRecordButton.isChecked():
             if hasattr(self.FrameSource, 'bufferpath') and Path(self.FrameSource.bufferpath).exists():
                 SaveFileName, _ =QtGui.QFileDialog.getSaveFileName(self,'Save file', '', "Recorded frames (*.h5)")
+                if SaveFileName=='':
+                    return
                 if Path(SaveFileName).suffix=='':
                     SaveFileName=SaveFileName+'.h5'
                 Path(self.FrameSource.bufferpath).rename(SaveFileName)
@@ -278,15 +283,17 @@ class MainWindow(QtWidgets.QMainWindow):
             if hasattr(self.FrameSource, 'bufferpath') and Path(self.FrameSource.bufferpath).exists():
                 exportsource=FrameSupply.Hdf5Reader(self.FrameSource.bufferpath)
                 exportsource.start()
-            elif self.CameraToggleButton.isChecked():
+            elif self.CameraToggleButton.isChecked() or not Path(self.FrameSource.bufferpath).exists():
                 errorpopup=QtGui.QMessageBox()
                 errorpopup.setText('No video has been recorded')
                 errorpopup.setStandardButtons(QtGui.QMessageBox.Ok)
-                errorpopup.exec_()
+                errorpopup.exec_()   
             else:
                 exportsource=self.FrameSource
             exportsource.framenumber=int(0)
             SaveFileName, _ =QtGui.QFileDialog.getSaveFileName(self,'Export Video', '', "Recorded frames (*.mp4)")
+            if SaveFileName=='':
+                return
             if Path(SaveFileName).suffix =='':
                 SaveFileName=SaveFileName+'.mp4'
             fourcc=cv2.VideoWriter_fourcc('m', 'p', '4', 'v')
