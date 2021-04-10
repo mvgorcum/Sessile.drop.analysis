@@ -141,6 +141,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.PlotItem.setLabel('bottom',text='Time [s]')
             else:
                 self.PlotItem.setLabel('bottom',text='Frame number')
+            self.PlotItem.addItem(self.ThetaLeftPlot)
+            self.PlotItem.addItem(self.ThetaRightPlot)
             AnalysisThread = threading.Thread(target=self.RunAnalysis)
             AnalysisThread.start()
             
@@ -185,8 +187,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.FrameSource.stop()
     
     def RunAnalysis(self):                
-        self.PlotItem.addItem(self.ThetaLeftPlot)
-        self.PlotItem.addItem(self.ThetaRightPlot)
         while self.StartStopButton.isChecked():
             org_frame,framecaptime = self.FrameSource.getnextframe()
             if not np.all(org_frame==-1):
