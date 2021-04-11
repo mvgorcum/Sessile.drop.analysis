@@ -1,0 +1,16 @@
+name: sessile_drop_analysis
+channels:
+  - conda-forge
+dependencies:
+  - conda-forge::python=3.8
+  - conda-forge::pandas
+  - conda-forge::scikit-image
+  - conda-forge::pyqt
+  - conda-forge::pyqtgraph
+  - conda-forge::py-opencv
+  - conda-forge::h5py
+  - conda-forge::shapely
+  - conda-forge::toml
+  - conda-forge::pip
+  - pip:
+      - python-magic-bin
