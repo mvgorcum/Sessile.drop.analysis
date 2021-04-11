@@ -17,7 +17,7 @@ except Exception:
 """.lstrip()
 
 setup(
-    use_scm_version={'write_to': os.path.join('sessile_drop_analysis', 'version.py'),
+    use_scm_version={'write_to': os.path.join('drop_analysis', 'version.py'),
                      'write_to_template': VERSION_TEMPLATE},
 
 )

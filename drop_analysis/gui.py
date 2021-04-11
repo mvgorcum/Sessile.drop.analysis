@@ -6,15 +6,17 @@ import pyqtgraph as pg
 import sys
 from pathlib import Path
 from skimage.filters import threshold_otsu
-from edge_detection import subpixel_detection as edgedetection
-from edge_analysis import analysis
 import numpy as np
 import pandas as pd
 import threading
 from time import sleep
+from pkg_resources import resource_filename
 import magic
-import FrameSupply
-import settings
+
+from . import FrameSupply
+from . import settings
+from .edge_detection import subpixel_detection as edgedetection
+from .edge_analysis import analysis
 
 pg.setConfigOptions(imageAxisOrder='row-major')
 
@@ -36,22 +38,22 @@ class MainWindow(QtWidgets.QMainWindow):
         Initialize the main window, set up all plots, and connect to defined buttons.
         """
         super(MainWindow, self).__init__(*args, **kwargs)
-        uic.loadUi('Mainwindow.ui', self)
+        uic.loadUi(resource_filename('drop_analysis', 'Mainwindow.ui'), self)
         self.setWindowIcon(QtGui.QIcon('icon.ico'))
-        
+
         self.RootVidPlot=self.VideoWidget.getPlotItem()
         self.RootVidPlot.setAspectLocked(True)
         self.RootVidPlot.hideAxis('bottom')
         self.RootVidPlot.hideAxis('left')
         self.RootVidPlot.invertY(True)
-        
+
         self.VideoItem = pg.ImageItem()
         self.RootVidPlot.addItem(self.VideoItem)
         self.LeftEdgeItem=pg.PlotCurveItem(pen=pg.mkPen(color='#ff7f0e', width=2))
         self.RightEdgeItem=pg.PlotCurveItem(pen=pg.mkPen(color='#1f77b4', width=2))
         self.LeftEdgeFit=pg.PlotCurveItem(pen=pg.mkPen(color='#ff7f0e', width=4))
         self.RightEdgeFit=pg.PlotCurveItem(pen=pg.mkPen(color='#1f77b4', width=4))
-        
+
         self.RootVidPlot.addItem(self.LeftEdgeItem)
         self.RootVidPlot.addItem(self.RightEdgeItem)
         self.RootVidPlot.addItem(self.RightEdgeFit)
@@ -61,20 +63,20 @@ class MainWindow(QtWidgets.QMainWindow):
         self.updateRightEdge.connect(self.RightEdgeItem.setData)
         self.updateLeftEdgeFit.connect(self.LeftEdgeFit.setData)
         self.updateRightEdgeFit.connect(self.RightEdgeFit.setData)
-        
+
         self.ThetaLeftPlot=pg.ScatterPlotItem(pen='#ff7f0e',brush='#ff7f0e',symbol='o')
         self.ThetaRightPlot=pg.ScatterPlotItem(pen='#1f77b4',brush='#1f77b4',symbol='o')
         self.PlotItem=self.PlotWidget.getPlotItem()
         self.updatePlotLeft.connect(self.ThetaLeftPlot.setData)
         self.updatePlotRight.connect(self.ThetaRightPlot.setData)
-        
+
         self.BaseLine=pg.LineSegmentROI([(15,90),(100,90)],pen='#d62728')
         self.CropRoi=pg.RectROI([10,10],[110,110],scaleSnap=True)
         self.CropRoi.addScaleHandle([0,0],[1,1])
         self.VideoWidget.addItem(self.CropRoi)
         self.VideoWidget.addItem(self.BaseLine)
-        
-        
+
+
         self.actionOpen.triggered.connect(self.openCall)
         self.actionSaveData.triggered.connect(self.SaveResult)
         self.actionSettings.triggered.connect(self.configSettings)
@@ -84,7 +86,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.VidRecordButton.hide()
         self.actionSaveVideo.triggered.connect(self.SaveVideo)
         self.actionExportVideo.triggered.connect(self.ExportVideo)
-        
+
         self.FrameSource=FrameSupply.FrameSupply()
         self.MeasurementResult=pd.DataFrame(columns=['thetaleft', 'thetaright', 'contactpointleft','contactpointright','volume','time'])
 
@@ -93,12 +95,12 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.kInputSlider.setValue(self.settings.config['sessiledrop']['defaultfitpixels'])
         self.kInputSpinbox.setValue(self.kInputSlider.value())
-        self.kInputSlider.valueChanged.connect(lambda: self.kInputSpinbox.setValue(self.kInputSlider.value()))	
-        self.kInputSpinbox.valueChanged.connect(lambda: self.kInputSlider.setValue(self.kInputSpinbox.value()))	
-        
+        self.kInputSlider.valueChanged.connect(lambda: self.kInputSpinbox.setValue(self.kInputSlider.value()))
+        self.kInputSpinbox.valueChanged.connect(lambda: self.kInputSlider.setValue(self.kInputSpinbox.value()))
+
         self.updateFrameCount.connect(lambda f,n: self.FrameCounterText.setText('Frame: '+str(f)+'/'+str(n)))
-        
-    
+
+
     def closeEvent(self, event):
         if self.FrameSource.is_running:
             self.FrameSource.stop()
@@ -108,7 +110,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.FrameSource.record=True
         else:
             self.FrameSource.record=False
-        
+
 
     def openCall(self):
         if self.FrameSource.is_running:
@@ -131,8 +133,8 @@ class MainWindow(QtWidgets.QMainWindow):
             errorpopup.setText('Unkown filetype')
             errorpopup.setStandardButtons(QtGui.QMessageBox.Ok)
             errorpopup.exec_()
-        
-        
+
+
     def StartStop(self):
         if self.StartStopButton.isChecked():
             self.StartStopButton.setText('Stop Measurement')
@@ -145,10 +147,10 @@ class MainWindow(QtWidgets.QMainWindow):
             self.PlotItem.addItem(self.ThetaRightPlot)
             AnalysisThread = threading.Thread(target=self.RunAnalysis)
             AnalysisThread.start()
-            
+
         elif not self.StartStopButton.isChecked():
             self.StartStopButton.setText('Start Measurement')
-    
+
     def CameraToggle(self):
         if self.CameraToggleButton.isChecked():
             bufferpath=Path(self.settings.config['opencvcamera']['bufferpath'])
@@ -173,7 +175,7 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
 
             self.VidRecordButton.hide()
-    
+
     def CameraCapture(self):
         while self.CameraToggleButton.isChecked():
             if self.StartStopButton.isChecked():
@@ -185,8 +187,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 else:
                     sleep(0.001)
         self.FrameSource.stop()
-    
-    def RunAnalysis(self):                
+
+    def RunAnalysis(self):
         while self.StartStopButton.isChecked():
             org_frame,framecaptime = self.FrameSource.getnextframe()
             if not np.all(org_frame==-1):
@@ -235,7 +237,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 sleep(0.001)
             if (not self.FrameSource.is_running and len(self.FrameSource.framebuffer)<1):
                 break
-            
+
     def SaveResult(self):
         if len(self.MeasurementResult.index)>0:
             if not self.FrameSource.gotcapturetime:
@@ -251,7 +253,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 if Path(SaveFileName).suffix=='':
                     SaveFileName=SaveFileName+'.xlsx'
                 self.MeasurementResult.to_excel(SaveFileName,index=False)
-                
+
             self.MaybeSave=False
         else:
             errorpopup=QtGui.QMessageBox()
@@ -261,7 +263,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def configSettings(self):
         self.settings.show()
-    
+
     def SaveVideo(self):
         if not self.VidRecordButton.isChecked():
             if hasattr(self.FrameSource, 'bufferpath') and Path(self.FrameSource.bufferpath).exists():
@@ -281,7 +283,7 @@ class MainWindow(QtWidgets.QMainWindow):
             errorpopup.setText("Can't save video while recording is running")
             errorpopup.setStandardButtons(QtGui.QMessageBox.Ok)
             errorpopup.exec_()
-            
+
     def ExportVideo(self):
         if not self.VidRecordButton.isChecked():
             if hasattr(self.FrameSource, 'bufferpath') and Path(self.FrameSource.bufferpath).exists():
@@ -291,7 +293,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 errorpopup=QtGui.QMessageBox()
                 errorpopup.setText('No video has been recorded')
                 errorpopup.setStandardButtons(QtGui.QMessageBox.Ok)
-                errorpopup.exec_()   
+                errorpopup.exec_()
             else:
                 exportsource=self.FrameSource
             exportsource.framenumber=int(0)
@@ -314,24 +316,12 @@ class MainWindow(QtWidgets.QMainWindow):
                 progress.setValue(i)
                 if progress.wasCanceled():
                     break
-                
+
             progress.setValue(totalframes)
             writer.release()
         else:
             errorpopup=QtGui.QMessageBox()
             errorpopup.setText("Can't export video while recording is running")
             errorpopup.setStandardButtons(QtGui.QMessageBox.Ok)
-            errorpopup.exec_()   
+            errorpopup.exec_()
 
-
-    
-def main():
-    app = QtWidgets.QApplication(sys.argv)
-    app.setWindowIcon(QtGui.QIcon('icon.ico'))
-    main = MainWindow()
-    
-    main.show()
-    sys.exit(app.exec_())
-
-if __name__ == '__main__':         
-    main()
