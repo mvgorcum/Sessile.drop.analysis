@@ -2,12 +2,13 @@ import toml
 from PyQt5 import QtWidgets, uic, QtGui
 import os
 from pathlib import Path
+from pkg_resources import resource_filename
 
 class settings(QtGui.QDialog):
     def __init__(self, parent=None):
         super(settings, self).__init__(parent)
-        uic.loadUi('Settings.ui', self)
-        self.config=toml.load("config.toml")
+        uic.loadUi(resource_filename('drop_analysis', 'Settings.ui'), self)
+        self.config=toml.load(resource_filename("drop_analysis", "config.toml"))
         self.okcancelbuttons.accepted.connect(self._saveconfig)
         self.autodetectresolution.clicked.connect(self._detectres)
         self.fittype.activated[str].connect(self._showhidepolyorder)
@@ -41,7 +42,7 @@ class settings(QtGui.QDialog):
         else:
             self.polyfitorder.hide()
             self.polyfitorderlabel.hide()
-    
+
     def _tryframerate(self):
         import cv2
         try:
@@ -85,7 +86,7 @@ class settings(QtGui.QDialog):
         self.BufferPathDisplay.setText(self.config['opencvcamera']['bufferpath'])
 
 
-      
+
 def detect_resolutions():
     """
     Using the list of common resolutions (downloaded from https://en.wikipedia.org/wiki/List_of_common_resolutions (CC-BY-SA 3.0))
@@ -94,7 +95,8 @@ def detect_resolutions():
     import pandas as pd
     import cv2
     resolutions = {}
-    resolutionlist=pd.read_csv('common_resolutions.csv',skiprows=1)
+    resolutionlist=pd.read_csv(resource_filename('drop_analysis.data', 'common_resolutions.csv'),
+                                                 skiprows=1)
     try:
         cap = cv2.VideoCapture(0)
     except:
