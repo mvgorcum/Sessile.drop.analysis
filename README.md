@@ -18,11 +18,12 @@ A GUI using pyqtgraph and pyqt5 is available, as well as a standalone script. Th
 ![](Screenshot.png)
 
 ## Prerequisites
-If you don't use the precomiled releases you'll need:
-The script requires numpy, pandas, scipy, pyqt5, opencv-python, scikit-image, imageio, shapely, pyqtgraph >=0.11.0, toml, h5py, json, and python-magic.
+If you don't use the precomiled releases nor `pip install` it you'll need:
+The script requires numpy, pandas, scipy, pyqt5, opencv-python, scikit-image, imageio, shapely, pyqtgraph >=0.11.0, toml, h5py, json, and appdirs.
 
-## Running the script
-To use the GUI, run QT_sessile_drop_analysis.py, while the standalone script is in Old scripts/sessile_drop_analysis.py.
+## Install and running
+To install the program run `pip install .` in the sessile.drop.analysis folder.
+To run the program after installing simply run `drop_analysis` in the terminal.
 
 ## Some details
 * The code is written for Python 3.8
