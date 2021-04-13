@@ -1,6 +1,6 @@
 [opencvcamera]
-framerate = 30.0
-resolution = [ 1280, 720,]
+framerate = 15.0
+resolution = [ 640, 480,]
 bufferpath = "buffer/buffer.h5"
 
 [edgedetection]

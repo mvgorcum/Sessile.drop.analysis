@@ -3,12 +3,22 @@ from PyQt5 import QtWidgets, uic, QtGui
 import os
 from pathlib import Path
 from pkg_resources import resource_filename
+import appdirs
 
 class settings(QtGui.QDialog):
     def __init__(self, parent=None):
         super(settings, self).__init__(parent)
         uic.loadUi(resource_filename('drop_analysis', 'Settings.ui'), self)
-        self.config=toml.load(resource_filename("drop_analysis", "config.toml"))
+        self.appname='drop_analysis'
+        self.appauthor = "mvgorcum"
+        self.configpath=Path(appdirs.user_config_dir(self.appname))
+        defaultconfig=toml.load(resource_filename("drop_analysis", "config.toml"))
+        if self.configpath.joinpath('config.toml').exists():
+            userconfig=toml.load(self.configpath.joinpath('config.toml'))
+        else:
+            userconfig={}
+        self.config={**defaultconfig,**userconfig}
+        self.config['opencvcamera']['bufferpath']=appdirs.user_cache_dir(self.appname, self.appauthor)
         self.okcancelbuttons.accepted.connect(self._saveconfig)
         self.autodetectresolution.clicked.connect(self._detectres)
         self.fittype.activated[str].connect(self._showhidepolyorder)
@@ -73,7 +83,9 @@ class settings(QtGui.QDialog):
         self.config['sessiledrop']['fittype']=self.fittype.currentData()
         self.config['sessiledrop']['polyfitorder']=self.polyfitorder.value()
         self.config['sessiledrop']['defaultfitpixels']=self.defaultfitheight.value()
-        with open("config.toml",'w') as configfile:
+        if not self.configpath.exists():
+            self.configpath.mkdir()
+        with open(self.configpath.joinpath('config.toml'),'w+') as configfile:
             toml.dump(self.config,configfile)
 
     def _changebufferpath(self):

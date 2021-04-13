@@ -11,7 +11,7 @@ import pandas as pd
 import threading
 from time import sleep
 from pkg_resources import resource_filename
-import magic
+import mimetypes
 
 from . import FrameSupply
 from . import settings
@@ -116,7 +116,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if self.FrameSource.is_running:
             self.FrameSource.stop()
         VideoFile, _ = QtGui.QFileDialog.getOpenFileName(self,'Open file')
-        mimetype=magic.from_file(VideoFile,mime=True)
+        mimetype=mimetypes.guess_type(VideoFile)[0]
         self.MeasurementResult=pd.DataFrame(columns=['thetaleft', 'thetaright', 'contactpointleft','contactpointright','volume','time'])
         self.PlotItem.clear()
         if any(mimetype in key for key in filetypemap):
