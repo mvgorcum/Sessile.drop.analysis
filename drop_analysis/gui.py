@@ -154,7 +154,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def CameraToggle(self):
         if self.CameraToggleButton.isChecked():
             bufferpath=Path(self.settings.config['opencvcamera']['bufferpath'])
-            bufferpath.parent.mkdir(exist_ok=True)
+            bufferpath.parent.mkdir(parents=True,exist_ok=True)
             if bufferpath.exists():
                 bufferpath.unlink()
             self.VidRecordButton.show()
