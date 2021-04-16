@@ -21,7 +21,7 @@ from .edge_analysis import analysis
 pg.setConfigOptions(imageAxisOrder='row-major')
 
 filetypemap={'image/tiff':FrameSupply.ImageReader,'image/jpeg':FrameSupply.ImageReader,'image/png':FrameSupply.ImageReader,
-             'video/x-msvideo':FrameSupply.OpencvReadVideo,'video/mp4':FrameSupply.OpencvReadVideo,
+             'video/x-msvideo':FrameSupply.OpencvReadVideo,'video/mp4':FrameSupply.OpencvReadVideo,'video/avi':FrameSupply.OpencvReadVideo,
              'application/x-hdf':FrameSupply.Hdf5Reader}
 
 class MainWindow(QtWidgets.QMainWindow):
