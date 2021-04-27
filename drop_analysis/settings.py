@@ -84,7 +84,7 @@ class settings(QtGui.QDialog):
         self.config['sessiledrop']['polyfitorder']=self.polyfitorder.value()
         self.config['sessiledrop']['defaultfitpixels']=self.defaultfitheight.value()
         if not self.configpath.exists():
-            self.configpath.mkdir()
+            self.configpath.mkdir(parents=True)
         with open(self.configpath.joinpath('config.toml'),'w+') as configfile:
             toml.dump(self.config,configfile)
 
