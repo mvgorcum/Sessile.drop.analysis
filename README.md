@@ -25,6 +25,9 @@ The script requires numpy, pandas, scipy, pyqt5, opencv-python, scikit-image, im
 To install the program run `pip install .` in the sessile.drop.analysis folder.
 To run the program after installing simply run `drop_analysis` in the terminal.
 
+To compile a binary, pyinstaller is required, use the following:
+`pyinstaller --name drop_analysis --additional-hooks-dir hooks --exclude-module matplotlib --icon drop_analysis/data/icon.ico --onefile pyinst_entrypoint.py`
+
 ## Some details
 * The code is written for Python 3.8
 * The edge detection uses only a horizontal subpixel correction, and when fitting the errorfunction, 40 pixels left and right of the edge are used.  
