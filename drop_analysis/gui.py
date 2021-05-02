@@ -39,7 +39,7 @@ class MainWindow(QtWidgets.QMainWindow):
         """
         super(MainWindow, self).__init__(*args, **kwargs)
         uic.loadUi(resource_filename('drop_analysis', 'Mainwindow.ui'), self)
-        self.setWindowIcon(QtGui.QIcon('icon.ico'))
+        self.setWindowIcon(QtGui.QIcon(resource_filename('drop_analysis.data', 'icon.ico')))
 
         self.RootVidPlot=self.VideoWidget.getPlotItem()
         self.RootVidPlot.setAspectLocked(True)
