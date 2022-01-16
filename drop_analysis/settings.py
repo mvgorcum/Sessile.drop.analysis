@@ -5,7 +5,7 @@ from pathlib import Path
 from pkg_resources import resource_filename
 import appdirs
 
-class settings(QtGui.QDialog):
+class settings(QtWidgets.QDialog):
     def __init__(self, parent=None):
         super(settings, self).__init__(parent)
         uic.loadUi(resource_filename('drop_analysis', 'Settings.ui'), self)

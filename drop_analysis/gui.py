@@ -5,7 +5,7 @@ import cv2
 import pyqtgraph as pg
 import sys
 from pathlib import Path
-from skimage.filters import threshold_otsu
+from .otsu import otsu
 import numpy as np
 import pandas as pd
 import threading
@@ -115,7 +115,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def openCall(self):
         if self.FrameSource.is_running:
             self.FrameSource.stop()
-        VideoFile, _ = QtGui.QFileDialog.getOpenFileName(self,'Open file')
+        VideoFile, _ = QtWidgets.QFileDialog.getOpenFileName(self,'Open file')
         mimetype=mimetypes.guess_type(VideoFile)[0]
         self.MeasurementResult=pd.DataFrame(columns=['thetaleft', 'thetaright', 'contactpointleft','contactpointright','volume','time'])
         self.PlotItem.clear()
@@ -210,7 +210,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     gray = cv2.cvtColor(cropped, cv2.COLOR_RGB2GRAY)
                 else:
                     gray = np.asarray(cropped)
-                thresh=threshold_otsu(gray,np.iinfo(type(gray.flat[0])).max)
+                thresh=otsu(gray)
                 CroppedEdgeLeft,CroppedEdgeRight=edgedetection(gray,thresh,self.settings.config['edgedetection']['subpixelscheme'])
                 EdgeLeft=CroppedEdgeLeft+horizontalCropOffset
                 EdgeRight=CroppedEdgeRight+horizontalCropOffset
@@ -242,7 +242,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if len(self.MeasurementResult.index)>0:
             if not self.FrameSource.gotcapturetime:
                 self.MeasurementResult=self.MeasurementResult.rename(columns={"time": "framenumber"})
-            SaveFileName, selectedtype =QtGui.QFileDialog.getSaveFileName(self,'Save file', '', "CSV Files (*.csv);;Excel Files (*.xlsx)")
+            SaveFileName, selectedtype =QtWidgets.QFileDialog.getSaveFileName(self,'Save file', '', "CSV Files (*.csv);;Excel Files (*.xlsx)")
             if SaveFileName=='':
                 return
             if selectedtype=='CSV Files (*.csv)':
@@ -267,7 +267,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def SaveVideo(self):
         if not self.VidRecordButton.isChecked():
             if hasattr(self.FrameSource, 'bufferpath') and Path(self.FrameSource.bufferpath).exists():
-                SaveFileName, _ =QtGui.QFileDialog.getSaveFileName(self,'Save file', '', "Recorded frames (*.h5)")
+                SaveFileName, _ =QtWidgets.QFileDialog.getSaveFileName(self,'Save file', '', "Recorded frames (*.h5)")
                 if SaveFileName=='':
                     return
                 if Path(SaveFileName).suffix=='':
@@ -297,7 +297,7 @@ class MainWindow(QtWidgets.QMainWindow):
             else:
                 exportsource=self.FrameSource
             exportsource.framenumber=int(0)
-            SaveFileName, _ =QtGui.QFileDialog.getSaveFileName(self,'Export Video', '', "Recorded frames (*.mp4)")
+            SaveFileName, _ =QtWidgets.QFileDialog.getSaveFileName(self,'Export Video', '', "Recorded frames (*.mp4)")
             if SaveFileName=='':
                 return
             if Path(SaveFileName).suffix =='':
@@ -307,7 +307,7 @@ class MainWindow(QtWidgets.QMainWindow):
             fps=exportsource.framerate
             writer=cv2.VideoWriter(SaveFileName,fourcc,fps,(int(resolution[0]),int(resolution[1])))
             totalframes=exportsource.nframes
-            progress=QtGui.QProgressDialog("Saving Video...", "Abort", 0,totalframes , self)
+            progress=QtWidgets.QProgressDialog("Saving Video...", "Abort", 0,totalframes , self)
             progress.setWindowModality(Qt.WindowModal)
             sleep(0.1)
             for i in range(totalframes):
