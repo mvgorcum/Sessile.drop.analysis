@@ -58,9 +58,9 @@ class settings(QtWidgets.QDialog):
         try:
             cap = cv2.VideoCapture(0)
         except:
-            errorpopup=QtGui.QMessageBox()
+            errorpopup=QtWidgets.QMessageBox()
             errorpopup.setText('Error opening camera, is the Live Camera disabled?')
-            errorpopup.setStandardButtons(QtGui.QMessageBox.Ok)
+            errorpopup.setStandardButtons(QtWidgets.QMessageBox.Ok)
             errorpopup.exec_()
             return {}
         if cap.isOpened():
@@ -70,9 +70,9 @@ class settings(QtWidgets.QDialog):
             self.config['opencvcamera']['framerate']=actualframerate
 
         else:
-            errorpopup=QtGui.QMessageBox()
+            errorpopup=QtWidgets.QMessageBox()
             errorpopup.setText('Error opening camera, is the Live camera disabled?')
-            errorpopup.setStandardButtons(QtGui.QMessageBox.Ok)
+            errorpopup.setStandardButtons(QtWidgets.QMessageBox.Ok)
             errorpopup.exec_()
 
     def _saveconfig(self):
@@ -89,7 +89,7 @@ class settings(QtWidgets.QDialog):
             toml.dump(self.config,configfile)
 
     def _changebufferpath(self):
-        SaveFileName, _ =QtGui.QFileDialog.getSaveFileName(self,'Buffer file location', '', "Buffer file (*.h5)")
+        SaveFileName, _ =QtWidgets.QFileDialog.getSaveFileName(self,'Buffer file location', '', "Buffer file (*.h5)")
         if SaveFileName=='':
             return
         if Path(SaveFileName).suffix =='':
@@ -112,9 +112,9 @@ def detect_resolutions():
     try:
         cap = cv2.VideoCapture(0)
     except:
-        errorpopup=QtGui.QMessageBox()
+        errorpopup=QtWidgets.QMessageBox()
         errorpopup.setText('Error opening camera, is the Live Camera disabled?')
-        errorpopup.setStandardButtons(QtGui.QMessageBox.Ok)
+        errorpopup.setStandardButtons(QtWidgets.QMessageBox.Ok)
         errorpopup.exec_()
         return {}
     if cap.isOpened():
@@ -125,8 +125,8 @@ def detect_resolutions():
             height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
             resolutions[str(width)+"x"+str(height)] = [width,height]
     else:
-        errorpopup=QtGui.QMessageBox()
+        errorpopup=QtWidgets.QMessageBox()
         errorpopup.setText('Error opening camera, is the Live camera disabled?')
-        errorpopup.setStandardButtons(QtGui.QMessageBox.Ok)
+        errorpopup.setStandardButtons(QtWidgets.QMessageBox.Ok)
         errorpopup.exec_()
     return resolutions

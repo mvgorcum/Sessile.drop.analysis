@@ -7,7 +7,7 @@ import cv2
 import imageio
 import numpy as np
 from time import sleep
-from PyQt5 import QtGui
+from PyQt5 import QtGui, QtWidgets
 import datetime
 import h5py
 import json
@@ -256,9 +256,9 @@ class OpencvCamera(FrameSupply):
         firstrec=True
 
         if not self.cap.isOpened(): 
-            errorpopup=QtGui.QMessageBox()
+            errorpopup=QtWidgets.QMessageBox()
             errorpopup.setText('Error opening video stream')
-            errorpopup.setStandardButtons(QtGui.QMessageBox.Ok)
+            errorpopup.setStandardButtons(QtWidgets.QMessageBox.Ok)
             errorpopup.exec_()
             self.cap.release()
             self.is_running = False

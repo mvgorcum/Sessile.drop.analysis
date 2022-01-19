@@ -119,7 +119,12 @@ class MainWindow(QtWidgets.QMainWindow):
         mimetype=mimetypes.guess_type(VideoFile)[0]
         self.MeasurementResult=pd.DataFrame(columns=['thetaleft', 'thetaright', 'contactpointleft','contactpointright','volume','time'])
         self.PlotItem.clear()
-        if any(mimetype in key for key in filetypemap):
+        if mimetype is None or not any(mimetype in key for key in filetypemap):
+            errorpopup=QtWidgets.QMessageBox()
+            errorpopup.setText('Unkown filetype')
+            errorpopup.setStandardButtons(QtWidgets.QMessageBox.Ok)
+            errorpopup.exec_()
+        else:
             self.FrameSource=filetypemap[mimetype](VideoFile)
             self.FrameSource.start()
             FrameWidth,FrameHeight=self.FrameSource.getframesize()
@@ -128,11 +133,6 @@ class MainWindow(QtWidgets.QMainWindow):
             self.BaseLine.setPos([FrameWidth*.2,FrameHeight*.7])
             firstframe,_=self.FrameSource.getfirstframe()
             self.VideoItem.setImage(firstframe,autoRange=True)
-        else:
-            errorpopup=QtGui.QMessageBox()
-            errorpopup.setText('Unkown filetype')
-            errorpopup.setStandardButtons(QtGui.QMessageBox.Ok)
-            errorpopup.exec_()
 
 
     def StartStop(self):
@@ -256,9 +256,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
             self.MaybeSave=False
         else:
-            errorpopup=QtGui.QMessageBox()
+            errorpopup=QtWidgets.QMessageBox()
             errorpopup.setText('Nothing to save')
-            errorpopup.setStandardButtons(QtGui.QMessageBox.Ok)
+            errorpopup.setStandardButtons(QtWidgets.QMessageBox.Ok)
             errorpopup.exec_()
 
     def configSettings(self):
@@ -274,14 +274,14 @@ class MainWindow(QtWidgets.QMainWindow):
                     SaveFileName=SaveFileName+'.h5'
                 Path(self.FrameSource.bufferpath).rename(SaveFileName)
             else:
-                errorpopup=QtGui.QMessageBox()
+                errorpopup=QtWidgets.QMessageBox()
                 errorpopup.setText('No video has been recorded')
-                errorpopup.setStandardButtons(QtGui.QMessageBox.Ok)
+                errorpopup.setStandardButtons(QtWidgets.QMessageBox.Ok)
                 errorpopup.exec_()
         else:
-            errorpopup=QtGui.QMessageBox()
+            errorpopup=QtWidgets.QMessageBox()
             errorpopup.setText("Can't save video while recording is running")
-            errorpopup.setStandardButtons(QtGui.QMessageBox.Ok)
+            errorpopup.setStandardButtons(QtWidgets.QMessageBox.Ok)
             errorpopup.exec_()
 
     def ExportVideo(self):
@@ -290,9 +290,9 @@ class MainWindow(QtWidgets.QMainWindow):
                 exportsource=FrameSupply.Hdf5Reader(self.FrameSource.bufferpath)
                 exportsource.start()
             elif self.CameraToggleButton.isChecked() or not Path(self.FrameSource.bufferpath).exists():
-                errorpopup=QtGui.QMessageBox()
+                errorpopup=QtWidgets.QMessageBox()
                 errorpopup.setText('No video has been recorded')
-                errorpopup.setStandardButtons(QtGui.QMessageBox.Ok)
+                errorpopup.setStandardButtons(QtWidgets.QMessageBox.Ok)
                 errorpopup.exec_()
             else:
                 exportsource=self.FrameSource
@@ -320,8 +320,8 @@ class MainWindow(QtWidgets.QMainWindow):
             progress.setValue(totalframes)
             writer.release()
         else:
-            errorpopup=QtGui.QMessageBox()
+            errorpopup=QtWidgets.QMessageBox()
             errorpopup.setText("Can't export video while recording is running")
-            errorpopup.setStandardButtons(QtGui.QMessageBox.Ok)
+            errorpopup.setStandardButtons(QtWidgets.QMessageBox.Ok)
             errorpopup.exec_()
 
