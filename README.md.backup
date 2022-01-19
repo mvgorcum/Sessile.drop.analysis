@@ -19,7 +19,7 @@ A GUI using pyqtgraph and pyqt5 is available, as well as a standalone script. Th
 
 ## Prerequisites
 If you don't use the precomiled releases nor `pip install` it you'll need:
-The script requires numpy, pandas, scipy, pyqt5, opencv-python, fast-histogram, imageio, shapely, pyqtgraph >=0.11.0, openpyxl, toml, h5py, json, and appdirs.
+The script requires numpy, pandas, scipy, pyqt5, opencv-python, fast_histogram, imageio, shapely, pyqtgraph >=0.11.0, openpyxl, toml, h5py, json, and appdirs.
 
 ## Install and running
 To install the program run `pip install .` in the sessile.drop.analysis folder.
