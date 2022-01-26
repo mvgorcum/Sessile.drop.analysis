@@ -40,6 +40,7 @@ class settings(QtWidgets.QDialog):
         self.chooseresolution.addItem(str(self.config['opencvcamera']['resolution'][0])+'x'+str(self.config['opencvcamera']['resolution'][1]),self.config['opencvcamera']['resolution'])
         self.framerate.setValue(self.config['opencvcamera']['framerate'])
         self.fittype.addItem("Polyfit","Polyfit")
+        self.fittype.addItem("Ellipse","Ellipse")
         self.fittype.setCurrentIndex(self.fittype.findData(self.config['sessiledrop']['fittype']))
         self.polyfitorder.setValue(self.config['sessiledrop']['polyfitorder'])
         self.defaultfitheight.setValue(self.config['sessiledrop']['defaultfitpixels'])

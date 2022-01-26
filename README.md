@@ -15,7 +15,7 @@ We use a subpixel edge detection, either fast, with a linear interpolation betwe
 
 ## Prerequisites
 If you don't use the precomiled releases nor `pip install` it you'll need:
-The script requires numpy, pandas, scipy, pyqt5, opencv-python, fast-histogram, imageio, shapely, pyqtgraph >=0.11.0, openpyxl, toml, h5py, json, and appdirs.
+The script requires numpy, pandas, scipy, pyqt5, opencv-python, fast-histogram, lsq-ellipse, imageio, shapely, pyqtgraph >=0.11.0, openpyxl, toml, h5py, json, and appdirs.
 
 ## Install and running
 This program has an installer for windows available in the releases assets on github, or is installable from pypi.org with pip install drop-analysis.

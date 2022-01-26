@@ -33,6 +33,7 @@ class MainWindow(QtWidgets.QMainWindow):
     updateLeftEdgeFit = pyqtSignal(np.ndarray,np.ndarray)
     updateRightEdgeFit = pyqtSignal(np.ndarray,np.ndarray)
     updateFrameCount=pyqtSignal(int,int)
+    updateFitHeightLine=pyqtSignal(np.ndarray,np.ndarray)
     def __init__(self, *args, **kwargs):
         """
         Initialize the main window, set up all plots, and connect to defined buttons.
@@ -40,6 +41,7 @@ class MainWindow(QtWidgets.QMainWindow):
         super(MainWindow, self).__init__(*args, **kwargs)
         uic.loadUi(resource_filename('drop_analysis', 'Mainwindow.ui'), self)
         self.setWindowIcon(QtGui.QIcon(resource_filename('drop_analysis.data', 'icon.ico')))
+        self.setWindowTitle('Drop Analysis')
 
         self.RootVidPlot=self.VideoWidget.getPlotItem()
         self.RootVidPlot.setAspectLocked(True)
@@ -49,20 +51,23 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.VideoItem = pg.ImageItem()
         self.RootVidPlot.addItem(self.VideoItem)
+        self.LeftEdgeFit=pg.PlotCurveItem(pen=pg.mkPen(color='#2ca02c', width=4))
+        self.RightEdgeFit=pg.PlotCurveItem(pen=pg.mkPen(color='#d62728', width=4))
         self.LeftEdgeItem=pg.PlotCurveItem(pen=pg.mkPen(color='#ff7f0e', width=2))
         self.RightEdgeItem=pg.PlotCurveItem(pen=pg.mkPen(color='#1f77b4', width=2))
-        self.LeftEdgeFit=pg.PlotCurveItem(pen=pg.mkPen(color='#ff7f0e', width=4))
-        self.RightEdgeFit=pg.PlotCurveItem(pen=pg.mkPen(color='#1f77b4', width=4))
+        self.FitHeightLine=pg.PlotCurveItem(pen=pg.mkPen(color='#d62728', width=1,style=Qt.DashLine))
 
-        self.RootVidPlot.addItem(self.LeftEdgeItem)
-        self.RootVidPlot.addItem(self.RightEdgeItem)
         self.RootVidPlot.addItem(self.RightEdgeFit)
         self.RootVidPlot.addItem(self.LeftEdgeFit)
+        self.RootVidPlot.addItem(self.LeftEdgeItem)
+        self.RootVidPlot.addItem(self.RightEdgeItem)
+        self.RootVidPlot.addItem(self.FitHeightLine)
         self.updateVideo.connect(self.VideoItem.setImage)
-        self.updateLeftEdge.connect(self.LeftEdgeItem.setData)
-        self.updateRightEdge.connect(self.RightEdgeItem.setData)
         self.updateLeftEdgeFit.connect(self.LeftEdgeFit.setData)
         self.updateRightEdgeFit.connect(self.RightEdgeFit.setData)
+        self.updateLeftEdge.connect(self.LeftEdgeItem.setData)
+        self.updateRightEdge.connect(self.RightEdgeItem.setData)
+        self.updateFitHeightLine.connect(self.FitHeightLine.setData)
 
         self.ThetaLeftPlot=pg.ScatterPlotItem(pen='#ff7f0e',brush='#ff7f0e',symbol='o')
         self.ThetaRightPlot=pg.ScatterPlotItem(pen='#1f77b4',brush='#1f77b4',symbol='o')
@@ -76,7 +81,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.VideoWidget.addItem(self.CropRoi)
         self.VideoWidget.addItem(self.BaseLine)
 
-
+        self.BaseLine.sigRegionChanged.connect(self._updateFitHeightLine)
         self.actionOpen.triggered.connect(self.openCall)
         self.actionSaveData.triggered.connect(self.SaveResult)
         self.actionSettings.triggered.connect(self.configSettings)
@@ -95,12 +100,23 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.kInputSlider.setValue(self.settings.config['sessiledrop']['defaultfitpixels'])
         self.kInputSpinbox.setValue(self.kInputSlider.value())
-        self.kInputSlider.valueChanged.connect(lambda: self.kInputSpinbox.setValue(self.kInputSlider.value()))
-        self.kInputSpinbox.valueChanged.connect(lambda: self.kInputSlider.setValue(self.kInputSpinbox.value()))
+        self.kInputSlider.valueChanged.connect(lambda: self._updateFitHeightLine('slider'))
+        self.kInputSpinbox.valueChanged.connect(lambda: self._updateFitHeightLine('spinbox'))
 
         self.updateFrameCount.connect(lambda f,n: self.FrameCounterText.setText('Frame: '+str(f)+'/'+str(n)))
 
+    def _updateFitHeightLine(self,kset=''):
+        if kset=='slider':
+            self.kInputSpinbox.setValue(self.kInputSlider.value())
+        elif kset=='spinbox':
+            self.kInputSlider.setValue(self.kInputSpinbox.value())
+        _,basearray=self.BaseLine.getArrayRegion(self.VideoItem.image, self.VideoItem, returnSlice=False, returnMappedCoords=True)
+        baseinput=[[basearray[0,0],basearray[1,0]-self.kInputSpinbox.value()],[basearray[0,-1],basearray[1,-1]-self.kInputSpinbox.value()]]
+        plotlinex=np.array([basearray[0,0],basearray[0,-1]])
+        plotliney=np.array([basearray[1,0]-self.kInputSpinbox.value(),basearray[1,-1]-self.kInputSpinbox.value()])
+        self.updateFitHeightLine.emit(plotlinex,plotliney)
 
+        
     def closeEvent(self, event):
         if self.FrameSource.is_running:
             self.FrameSource.stop()
@@ -214,7 +230,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 CroppedEdgeLeft,CroppedEdgeRight=edgedetection(gray,thresh,self.settings.config['edgedetection']['subpixelscheme'])
                 EdgeLeft=CroppedEdgeLeft+horizontalCropOffset
                 EdgeRight=CroppedEdgeRight+horizontalCropOffset
-                results, debuginfo = analysis(EdgeLeft,EdgeRight,base,cropped.shape,k=self.kInputSpinbox.value(),PO=self.settings.config['sessiledrop']['polyfitorder'])
+                results, debuginfo = analysis(EdgeLeft,EdgeRight,base,cropped.shape,k=self.kInputSpinbox.value(),PO=self.settings.config['sessiledrop']['polyfitorder'],fittype=self.settings.config['sessiledrop']['fittype'])
                 results.update({'time':framecaptime})
                 self.MeasurementResult=self.MeasurementResult.append(results,ignore_index=True)
                 if self.FrameSource.gotcapturetime:
@@ -229,8 +245,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.updateRightEdge.emit(EdgeRight,np.arange(0,len(EdgeRight))+verticalCropOffset)
                 self.updatePlotLeft.emit(plottime,plotleft)
                 self.updatePlotRight.emit(plottime,plotright)
-                self.updateLeftEdgeFit.emit(debuginfo[0,:],verticalCropOffset+debuginfo[1,:])
-                self.updateRightEdgeFit.emit(debuginfo[2,:],verticalCropOffset+debuginfo[3,:])
+                self.updateLeftEdgeFit.emit(debuginfo['leftfit'][0,:],verticalCropOffset+debuginfo['leftfit'][1,:])
+                self.updateRightEdgeFit.emit(debuginfo['rightfit'][0,:],verticalCropOffset+debuginfo['rightfit'][1,:])
                 self.MaybeSave=True
                 self.updateFrameCount.emit(self.FrameSource.framenumber,self.FrameSource.nframes)
             else:
