@@ -120,6 +120,16 @@ class MainWindow(QtWidgets.QMainWindow):
     def closeEvent(self, event):
         if self.FrameSource.is_running:
             self.FrameSource.stop()
+        if self.MaybeSave:
+            savepopup=QtWidgets.QMessageBox()
+            savepopup.setText('Unsaved analysis data.')
+            savepopup.setInformativeText("Do you want to save your data?")
+            savepopup.setStandardButtons(QtWidgets.QMessageBox.Save | QtWidgets.QMessageBox.Discard)
+            reply=savepopup.exec_()
+            if reply == QtWidgets.QMessageBox.Save:
+                self.SaveResult()
+
+
 
     def recordVid(self):
         if self.VidRecordButton.isChecked():
