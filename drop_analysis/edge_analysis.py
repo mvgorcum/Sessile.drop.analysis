@@ -70,7 +70,7 @@ def analysepolyfit(fitpointsleft,fitpointsright,leftcontact,rightcontact,baseinp
     leftline=LineString(np.column_stack((leftfitcurve,leftcontact.y-fitcurvevar)))
     contactpointright=baseline.intersection(rightline)
     contactpointleft=baseline.intersection(leftline)
-    results={'thetaleft':thetal, 'thetaright':thetar, 'contactpointleft':contactpointleft.x,'contactpointright':contactpointright.x}
+    results={'thetaleft':thetal, 'thetaright':thetar, 'contactpointleftx':contactpointleft.x,'contactpointlefty':contactpointleft.y,'contactpointrightx':contactpointright.x,'contactpointrighty':contactpointright.y}
     
     return results,debug
 
@@ -127,5 +127,5 @@ def analysellipse(fitpointsleft,fitpointsright,leftcontact,rightcontact,baseinpu
     
     
     debug={'leftfit':np.array([ellipsepointsfitted[:,0],ellipsepointsfitted[:,1]]),'rightfit':np.array([[],[]])}
-    results={'thetaleft':thetal, 'thetaright':thetar, 'contactpointleft':leftcontact.x,'contactpointright':rightcontact.x}
+    results={'thetaleft':thetal, 'thetaright':thetar, 'contactpointleftx':leftcontact.x,'contactpointlefty':leftcontact.y,'contactpointrightx':rightcontact.x,'contactpointrighty':rightcontact.y}
     return results,debug

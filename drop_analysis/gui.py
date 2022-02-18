@@ -93,7 +93,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actionExportVideo.triggered.connect(self.ExportVideo)
 
         self.FrameSource=FrameSupply.FrameSupply()
-        self.MeasurementResult=pd.DataFrame(columns=['thetaleft', 'thetaright', 'contactpointleft','contactpointright','volume','time'])
+        self.MeasurementResult=pd.DataFrame(columns=['thetaleft', 'thetaright', 'contactpointleftx','contactpointlefty','contactpointrightx','contactpointrighty','volume','time'])
 
         self.MaybeSave=False
         self.settings=settings.settings(self)
@@ -133,7 +133,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.FrameSource.stop()
         VideoFile, _ = QtWidgets.QFileDialog.getOpenFileName(self,'Open file')
         mimetype=mimetypes.guess_type(VideoFile)[0]
-        self.MeasurementResult=pd.DataFrame(columns=['thetaleft', 'thetaright', 'contactpointleft','contactpointright','volume','time'])
+        self.MeasurementResult=pd.DataFrame(columns=['thetaleft', 'thetaright', 'contactpointleftx','contactpointlefty','contactpointrightx','contactpointrighty','volume','time'])
         self.PlotItem.clear()
         if mimetype is None or not any(mimetype in key for key in filetypemap):
             errorpopup=QtWidgets.QMessageBox()
@@ -186,7 +186,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.BaseLine.setPos([FrameWidth*.2,FrameHeight*.7])
             CameraThread = threading.Thread(target=self.CameraCapture)
             CameraThread.start()
-            self.MeasurementResult=pd.DataFrame(columns=['thetaleft', 'thetaright', 'contactpointleft','contactpointright','volume','time'])
+            self.MeasurementResult=pd.DataFrame(columns=['thetaleft', 'thetaright', 'contactpointleftx','contactpointlefty','contactpointrightx','contactpointrighty','volume','time'])
             self.PlotItem.clear()
         else:
 
