@@ -1,7 +1,8 @@
 Sample/
 Dockerfile
 buffer/
-*.build/*
+*.build/
+*.dist/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
