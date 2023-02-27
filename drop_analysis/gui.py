@@ -5,7 +5,7 @@ import cv2
 import pyqtgraph as pg
 import sys
 from pathlib import Path
-from .otsu import otsu
+from drop_analysis.otsu import otsu
 import numpy as np
 import pandas as pd
 import threading
@@ -13,10 +13,10 @@ from time import sleep
 from pkg_resources import resource_filename
 import mimetypes
 
-from . import FrameSupply
-from . import settings
-from .edge_detection import subpixel_detection as edgedetection
-from .edge_analysis import analysis
+import drop_analysis.FrameSupply as FrameSupply
+from drop_analysis.settings import settings
+from drop_analysis.edge_detection import subpixel_detection as edgedetection
+from drop_analysis.edge_analysis import analysis
 
 pg.setConfigOptions(imageAxisOrder='row-major')
 
@@ -32,6 +32,7 @@ class MainWindow(QtWidgets.QMainWindow):
     updatePlotRight = pyqtSignal(np.ndarray,np.ndarray)
     updateLeftEdgeFit = pyqtSignal(np.ndarray,np.ndarray)
     updateRightEdgeFit = pyqtSignal(np.ndarray,np.ndarray)
+    updateCenterOfMass = pyqtSignal(list,list)
     updateFrameCount=pyqtSignal(int,int)
     updateFitHeightLine=pyqtSignal(np.ndarray,np.ndarray)
     def __init__(self, *args, **kwargs):
@@ -56,13 +57,17 @@ class MainWindow(QtWidgets.QMainWindow):
         self.LeftEdgeItem=pg.PlotCurveItem(pen=pg.mkPen(color='#ff7f0e', width=2))
         self.RightEdgeItem=pg.PlotCurveItem(pen=pg.mkPen(color='#1f77b4', width=2))
         self.FitHeightLine=pg.PlotCurveItem(pen=pg.mkPen(color='#d62728', width=1,style=Qt.DashLine))
+        self.CenterOfMassItem=pg.ScatterPlotItem(pen='#ff7f0e',brush='#ff7f0e',symbol='o')
 
         self.RootVidPlot.addItem(self.RightEdgeFit)
         self.RootVidPlot.addItem(self.LeftEdgeFit)
         self.RootVidPlot.addItem(self.LeftEdgeItem)
         self.RootVidPlot.addItem(self.RightEdgeItem)
         self.RootVidPlot.addItem(self.FitHeightLine)
+        self.RootVidPlot.addItem(self.CenterOfMassItem)
+
         self.updateVideo.connect(self.VideoItem.setImage)
+        self.updateCenterOfMass.connect(self.CenterOfMassItem.setData)
         self.updateLeftEdgeFit.connect(self.LeftEdgeFit.setData)
         self.updateRightEdgeFit.connect(self.RightEdgeFit.setData)
         self.updateLeftEdge.connect(self.LeftEdgeItem.setData)
@@ -96,7 +101,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.MeasurementResult=pd.DataFrame(columns=['thetaleft', 'thetaright', 'contactpointleftx','contactpointlefty','contactpointrightx','contactpointrighty','volume','time'])
 
         self.MaybeSave=False
-        self.settings=settings.settings(self)
+        self.settings=settings(self)
 
         self.kInputSlider.setValue(self.settings.config['sessiledrop']['defaultfitpixels'])
         self.kInputSpinbox.setValue(self.kInputSlider.value())
@@ -196,7 +201,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.BaseLine.setPos([FrameWidth*.2,FrameHeight*.7])
             CameraThread = threading.Thread(target=self.CameraCapture)
             CameraThread.start()
-            self.MeasurementResult=pd.DataFrame(columns=['thetaleft', 'thetaright', 'contactpointleftx','contactpointlefty','contactpointrightx','contactpointrighty','volume','time'])
+            self.MeasurementResult=pd.DataFrame(columns=['thetaleft', 'thetaright', 'contactpointleftx','contactpointlefty','contactpointrightx','contactpointrighty','volume','centroidx','centroidy','time'])
             self.PlotItem.clear()
         else:
 
@@ -242,6 +247,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 EdgeRight=CroppedEdgeRight+horizontalCropOffset
                 results, debuginfo = analysis(EdgeLeft,EdgeRight,base,cropped.shape,k=self.kInputSpinbox.value(),PO=self.settings.config['sessiledrop']['polyfitorder'],fittype=self.settings.config['sessiledrop']['fittype'])
                 results.update({'time':framecaptime})
+                results['centroidy']=results['centroidy']+verticalCropOffset #TODO: this is ugly and needs fixing
                 self.MeasurementResult=self.MeasurementResult.append(results,ignore_index=True)
                 if self.FrameSource.gotcapturetime:
                     plottime=self.MeasurementResult['time']-self.MeasurementResult.iloc[0]['time']
@@ -257,6 +263,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.updatePlotRight.emit(plottime,plotright)
                 self.updateLeftEdgeFit.emit(debuginfo['leftfit'][0,:],verticalCropOffset+debuginfo['leftfit'][1,:])
                 self.updateRightEdgeFit.emit(debuginfo['rightfit'][0,:],verticalCropOffset+debuginfo['rightfit'][1,:])
+                self.updateCenterOfMass.emit([results['centroidx']],[results['centroidy']])
                 self.MaybeSave=True
                 self.updateFrameCount.emit(self.FrameSource.framenumber,self.FrameSource.nframes)
             else:
