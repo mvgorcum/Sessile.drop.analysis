@@ -7,7 +7,8 @@ This is the documentation for sessile_drop_analysis.
    :maxdepth: 2
    :caption: Contents:
 
-
+   install.md
+   usage.md
 
 Indices and tables
 ==================

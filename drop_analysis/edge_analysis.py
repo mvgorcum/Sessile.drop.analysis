@@ -9,12 +9,15 @@ def analysis(edgeleft,edgeright,baseinput,framesize,k=100,PO=3,fittype='polyfit'
     from shapely.geometry import LineString
     import numpy as np
 
+    #use shapely linestrings to find the intersectionpoints between the edges and baseline
     baseline=LineString(baseinput) 
     rightline=LineString(np.column_stack((edgeright,(range(0,framesize[0]))))) 
     leftline=LineString(np.column_stack((edgeleft,(range(0,framesize[0])))))
     leftcontact=baseline.intersection(leftline)
     rightcontact=baseline.intersection(rightline)
     fitpointsleft=edgeleft[range(np.int(np.floor(leftcontact.y)),np.int(np.floor(leftcontact.y)-k),-1)]
+    
+    #if no edge was detected the value is set to 0 (ie. the edge of the image) so discard all these points
     if any(fitpointsleft==0):
         fitpointsleft=np.delete(fitpointsleft,range(np.argmax(fitpointsleft==0),k))
     fitpointsright=edgeright[range(np.int(np.floor(rightcontact.y)),np.int(np.floor(rightcontact.y)-k),-1)]
@@ -34,11 +37,15 @@ def analysis(edgeleft,edgeright,baseinput,framesize,k=100,PO=3,fittype='polyfit'
     return results, debug
 
 def volumecalc(leftcontact,rightcontact,edgeleft,edgeright):
+    """
+    We calculate the volume of the drop here. Note that this assumes a circlular drop (as viewed from the top).
+    A correction is made for a baseline that is at an angle
+    """
     import numpy as np
     dropvolume=0
     for height in range (0,min(np.int(np.floor(leftcontact.y)),np.int(np.floor(rightcontact.y)))):
         dropvolume=dropvolume+np.pi*np.square((edgeright[height]-edgeleft[height])/2)
-    #uing cylindrical slice we calculate the remaining volume
+    #using cylindrical slice we calculate the remaining volume
     slantedbasediff=max(np.floor(leftcontact.y),np.floor(rightcontact.y))-min(np.floor(leftcontact.y),np.floor(rightcontact.y))
     #we assume that the radius is constant over the range of the slanted baseline, for small angles this is probably accurate, but for larger angles this can result in a significant error.
     baseradius=(edgeright[np.int(min(np.floor(leftcontact.y),np.floor(rightcontact.y)))]-edgeleft[np.int(min(np.floor(leftcontact.y),np.floor(rightcontact.y)))])/2
@@ -46,6 +53,9 @@ def volumecalc(leftcontact,rightcontact,edgeleft,edgeright):
     return dropvolume
 
 def analysepolyfit(fitpointsleft,fitpointsright,leftcontact,rightcontact,baseinput,baseline,k,PO):
+    """
+    Here we will fit the edges with a simple polyfit, calculate the slope of this fit at the baseline, and use that to calculate the angle
+    """
     from shapely.geometry import LineString
     import numpy as np
     leftfit=np.polyfit(range(0,fitpointsleft.shape[0]),fitpointsleft,PO)
@@ -75,6 +85,9 @@ def analysepolyfit(fitpointsleft,fitpointsright,leftcontact,rightcontact,baseinp
     return results,debug
 
 def analysellipse(fitpointsleft,fitpointsright,leftcontact,rightcontact,baseinput,baseline,k,framesize):
+    """
+    Here we will fit the edges with an ellipse, and calculate the contact angles of the fitted elipse with the baseline.
+    """
     from ellipse import LsqEllipse
     from shapely.geometry import LineString
     import numpy as np
@@ -106,7 +119,6 @@ def analysellipse(fitpointsleft,fitpointsright,leftcontact,rightcontact,baseinpu
         #d/dy of xellipse1&2
         sloperight=(-b - (2*b*(d + b*contact2.y) - 4*a*(e + 2*c*contact2.y))/(2*np.sqrt((d + b*contact2.y)**2 - 4*a*(f + contact2.y*(e + c*contact2.y)))))/(2*a)
         slopeleft= (-b + (2*b*(d + b*contact1.y) - 4*a*(e + 2*c*contact1.y))/(2*np.sqrt((d + b*contact1.y)**2 - 4*a*(f + contact1.y*(e + c*contact1.y)))))/(2*a)
-
     else:
         rightcontact=contact1
         leftcontact=contact2
@@ -122,9 +134,6 @@ def analysellipse(fitpointsleft,fitpointsright,leftcontact,rightcontact,baseinpu
     thetar=180-np.arccos(np.dot(basevec,rightvec)/(np.sqrt(np.dot(basevec,basevec))*np.sqrt(np.dot(rightvec,rightvec))))*180/np.pi
     
     ellipsepointsfitted=reg.return_fit(1000)
-    
-    
-    
     
     debug={'leftfit':np.array([ellipsepointsfitted[:,0],ellipsepointsfitted[:,1]]),'rightfit':np.array([[],[]])}
     results={'thetaleft':thetal, 'thetaright':thetar, 'contactpointleftx':leftcontact.x,'contactpointlefty':leftcontact.y,'contactpointrightx':rightcontact.x,'contactpointrighty':rightcontact.y}

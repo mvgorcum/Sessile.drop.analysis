@@ -20,6 +20,9 @@ from .edge_analysis import analysis
 
 pg.setConfigOptions(imageAxisOrder='row-major')
 
+#a dict to map the different files that can be opened to the right framesupply object. 
+#if a new filetype is to be supported, a framesource class needs to be written
+#and the mimetype of said format can then be mapped to said class here.
 filetypemap={'image/tiff':FrameSupply.ImageReader,'image/jpeg':FrameSupply.ImageReader,'image/png':FrameSupply.ImageReader,
              'video/x-msvideo':FrameSupply.OpencvReadVideo,'video/mp4':FrameSupply.OpencvReadVideo,'video/avi':FrameSupply.OpencvReadVideo,
              'application/x-hdf':FrameSupply.Hdf5Reader}
@@ -103,9 +106,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.kInputSlider.valueChanged.connect(lambda: self._updateFitHeightLine('slider'))
         self.kInputSpinbox.valueChanged.connect(lambda: self._updateFitHeightLine('spinbox'))
 
-        self.updateFrameCount.connect(lambda f,n: self.FrameCounterText.setText('Frame: '+str(f)+'/'+str(n)))
+        self.updateFrameCount.connect(lambda f,n: self.FrameCounterText.setText(f'Frame: {str(f)} / {str(n)}'))
 
     def _updateFitHeightLine(self,kset=''):
+        """This sets the amount of pixels to use for the fit, and we want the slider and the input spinbox to show the same value"""
         if kset=='slider':
             self.kInputSpinbox.setValue(self.kInputSlider.value())
         elif kset=='spinbox':
@@ -128,8 +132,6 @@ class MainWindow(QtWidgets.QMainWindow):
             reply=savepopup.exec_()
             if reply == QtWidgets.QMessageBox.Save:
                 self.SaveResult()
-
-
 
     def recordVid(self):
         if self.VidRecordButton.isChecked():
@@ -159,7 +161,6 @@ class MainWindow(QtWidgets.QMainWindow):
             self.BaseLine.setPos([FrameWidth*.2,FrameHeight*.7])
             firstframe,_=self.FrameSource.getfirstframe()
             self.VideoItem.setImage(firstframe,autoRange=True)
-
 
     def StartStop(self):
         if self.StartStopButton.isChecked():
@@ -215,6 +216,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.FrameSource.stop()
 
     def RunAnalysis(self):
+        """
+        This runs the actual analysis, note that we will want to run this in a seperate thread to not lock up the camera and/or UI.
+        First we start by grabbing the frames from the framesupply object
+        Then we grab the crop and baseline from the pyqtgraph window as set by the user and crop the image
+        If it's a color image, make it grayscale and send the image off for edge detection with the edgedetection.py function
+        The resulting edge is then sent off for analysis, returning the contact line position and angles
+        """
         while self.StartStopButton.isChecked():
             org_frame,framecaptime = self.FrameSource.getnextframe()
             if not np.all(org_frame==-1):
@@ -350,4 +358,3 @@ class MainWindow(QtWidgets.QMainWindow):
             errorpopup.setText("Can't export video while recording is running")
             errorpopup.setStandardButtons(QtWidgets.QMessageBox.Ok)
             errorpopup.exec_()
-

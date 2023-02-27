@@ -1,6 +1,14 @@
 import numpy as np
 from fast_histogram import histogram1d
 def otsu(gray):
+    """
+    Implementation of Otsu's method using the fast_histogram function.
+    This implementation is not quite as fast as the Otsu implementatin of skimage 
+    but that gave issues with compilation for windows, and the speed is close enough.
+    Note that we need to allow for both 8-bit and 16-bit images.
+    Caveat emptor: 16-bit images are quite a bit slower than 8-bit images,
+    because we loop over all graylevels.
+    """
     bitdepth=2**(gray[0,0].itemsize*8)
     histogramCounts=histogram1d(gray.flatten(),bins=bitdepth-1,range=[0,bitdepth-1])
     total = sum(histogramCounts)
