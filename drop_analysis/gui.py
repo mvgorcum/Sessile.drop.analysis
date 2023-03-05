@@ -248,7 +248,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 results, debuginfo = analysis(EdgeLeft,EdgeRight,base,cropped.shape,k=self.kInputSpinbox.value(),PO=self.settings.config['sessiledrop']['polyfitorder'],fittype=self.settings.config['sessiledrop']['fittype'])
                 results.update({'time':framecaptime})
                 results['centroidy']=results['centroidy']+verticalCropOffset #TODO: this is ugly and needs fixing
-                self.MeasurementResult=self.MeasurementResult.append(results,ignore_index=True)
+                self.MeasurementResult=pd.concat((self.MeasurementResult,pd.DataFrame(results,index=[0])),ignore_index=True)
                 if self.FrameSource.gotcapturetime:
                     plottime=self.MeasurementResult['time']-self.MeasurementResult.iloc[0]['time']
                     #convert from nanoseconds to seconds
