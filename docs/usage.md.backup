@@ -71,7 +71,7 @@ The framerate sets the framerate the software will attempt to read out the camer
 The buffer path is the path where all the frames are stored (uncompressed) while recording and/or analysing. Note that because this stores the frames uncompressed the buffer file can become very large for long measurements!
 
 
-## Further considerations
+## Advanced considerations
 
 ### Drop volume
 The drop volume is calculated by assuming that the drop is symmetric out-of-plane. Specifically we calculate the volume by calculating a cylinder for each pixel in the z (height) direction between the left and right edge. If the baseline is at an angle this is taken into account.
