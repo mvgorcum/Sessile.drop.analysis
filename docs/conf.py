@@ -10,7 +10,7 @@
 # -- Project information -----------------------------------------------------
 
 project = 'drop_analysis'
-copyright = '2021, Mathijs van Gorcum'
+copyright = '2023, Mathijs van Gorcum'
 author = 'Mathijs van Gorcum'
 
 # The full version, including alpha/beta/rc tags
@@ -34,6 +34,7 @@ extensions = [
     'sphinx.ext.mathjax',
     'sphinx_automodapi.automodapi',
     'sphinx_automodapi.smart_resolver',
+    "sphinx_favicon",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -63,7 +64,12 @@ intersphinx_mapping = {'https://docs.python.org/': None}
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'alabaster'
+html_theme = 'sphinx_book_theme'
+
+html_static_path = ["_static"]
+
+favicons = [
+    {"href": "html_favicon.ico"},]
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

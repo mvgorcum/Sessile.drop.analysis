@@ -1,10 +1,11 @@
 # Getting started
 
-Read the [install instructions](install.md) for installations.
+Read the [install instructions](install.md) for installation instructions.
 
 After opening the program you're greeted with a mostly-black screen.
-![Empty screnshot](Just_launched.png)
-First thing to do is to load the data that is to be analyzed. This can either be a live camera view on supported cameras, see the [Camera settings](#opencv-camera-settings) section  or by looking at saved images, tiffstacks, or video files. The files can be opened by going to file -> open and selecting the file to be analyzed.
+![Empty screenshot](Just_launched.png)
+
+First thing to do is to load the data that is to be analyzed. This can either be a live camera view on supported cameras, see the [Camera settings](#opencv-camera-settings) section, or by looking at saved images, tiffstacks, or video files. The files can be opened by going to file -> open and selecting the file to be analyzed.
 
 
 ## Basic analysis
@@ -69,6 +70,8 @@ In edit -> settings -> Opencv Camera you can configure how the software attempts
 The framerate sets the framerate the software will attempt to read out the camera. The resolution sets the resolution. Clicking autodetect will run a simple detection algorithm that tries to determine the resolutions that the camera is capable of.
 
 The buffer path is the path where all the frames are stored (uncompressed) while recording and/or analysing. Note that because this stores the frames uncompressed the buffer file can become very large for long measurements!
+
+Once the camera is properly configured, press the 'Live Camera' button on the main screen to directly read out the camera.
 
 
 ## Further considerations
