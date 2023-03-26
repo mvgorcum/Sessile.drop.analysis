@@ -9,7 +9,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'drop_analysis'
+project = 'drop-analysis'
 copyright = '2023, Mathijs van Gorcum'
 author = 'Mathijs van Gorcum'
 
