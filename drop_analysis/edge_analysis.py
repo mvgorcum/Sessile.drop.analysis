@@ -1,4 +1,6 @@
-def analysis(edgeleft,edgeright,baseinput,framesize,k=100,PO=3,fittype='polyfit'):
+import numpy as np
+from shapely.geometry import LineString, Polygon
+def analysis(edgeleft,edgeright,baseinput,framesize,k=100,PO=3,fittype='Polyfit'):
     """
     Analyzes the detected edge of the drop with the set baseline to
     give the contact angle, contact line position, and drop volume
@@ -6,7 +8,6 @@ def analysis(edgeleft,edgeright,baseinput,framesize,k=100,PO=3,fittype='polyfit'
     order of the polyfit used to fit the edge of the drop
     Returns contactpoints left and right, theta left and right, and drop volume
     """
-    from shapely.geometry import LineString
     import numpy as np
 
     #use shapely linestrings to find the intersectionpoints between the edges and baseline
@@ -32,8 +33,10 @@ def analysis(edgeleft,edgeright,baseinput,framesize,k=100,PO=3,fittype='polyfit'
         print('Unkown fittype')
         
     dropvolume=volumecalc(leftcontact,rightcontact,edgeleft,edgeright)
+    centroidx,centroidy=centerofgravitycalc(leftcontact,rightcontact,edgeleft,edgeright)
     results['volume']=dropvolume
-    
+    results['centroidx']=centroidx
+    results['centroidy']=centroidy
     return results, debug
 
 def volumecalc(leftcontact,rightcontact,edgeleft,edgeright):
@@ -51,6 +54,19 @@ def volumecalc(leftcontact,rightcontact,edgeleft,edgeright):
     baseradius=(edgeright[np.int(min(np.floor(leftcontact.y),np.floor(rightcontact.y)))]-edgeleft[np.int(min(np.floor(leftcontact.y),np.floor(rightcontact.y)))])/2
     dropvolume=dropvolume+.5*np.pi*np.square(baseradius)*slantedbasediff
     return dropvolume
+
+def centerofgravitycalc(leftcontact,rightcontact,edgeleft,edgeright):
+    yvarleft =np.append(leftcontact.y,range(np.int(np.floor(leftcontact.y)),0,-1))
+    yvarright=np.append(rightcontact.y,range(np.int(np.floor(rightcontact.y)),0,-1))
+    edgerightadd=np.append(rightcontact.x,edgeright[range(np.int(np.floor(rightcontact.y)),0,-1)])
+    edgeleftadd=np.append(leftcontact.x,edgeleft[range(np.int(np.floor(leftcontact.y)),0,-1)])
+    totaledge=np.append(edgeleftadd,np.flip(edgerightadd))
+    totalyvar=np.append(yvarleft,np.flip(yvarright))
+    edgexy=np.column_stack((totaledge,totalyvar))
+    edgepolygon=Polygon(edgexy)
+    centroidx=edgepolygon.centroid.x
+    centroidy=edgepolygon.centroid.y
+    return centroidx,centroidy
 
 def analysepolyfit(fitpointsleft,fitpointsright,leftcontact,rightcontact,baseinput,baseline,k,PO):
     """
