@@ -1,4 +1,4 @@
-# Install Sessile Drop Analysis
+# Install Drop Analysis
 
 
 ## With a python install

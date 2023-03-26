@@ -4,7 +4,7 @@ Read the [install instructions](install.md) for installations.
 
 After opening the program you're greeted with a mostly-black screen.
 ![Empty screnshot](Just_launched.png)
-First thing to do is to load the data that is to be analyzed. This can either be a live camera view on supported cameras, see the [Camera settings](#-Camera-settings) section  or by looking at saved images, tiffstacks, or video files. The files can be opened by going to file -> open and selecting the file to be analyzed.
+First thing to do is to load the data that is to be analyzed. This can either be a live camera view on supported cameras, see the [Camera settings](#opencv-camera-settings) section  or by looking at saved images, tiffstacks, or video files. The files can be opened by going to file -> open and selecting the file to be analyzed.
 
 
 ## Basic analysis

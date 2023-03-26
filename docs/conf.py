@@ -9,12 +9,12 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'sessile_drop_analysis'
+project = 'drop_analysis'
 copyright = '2021, Mathijs van Gorcum'
 author = 'Mathijs van Gorcum'
 
 # The full version, including alpha/beta/rc tags
-from sessile_drop_analysis import __version__
+from drop_analysis import __version__
 release = __version__
 
 # -- General configuration ---------------------------------------------------
@@ -69,3 +69,27 @@ html_theme = 'alabaster'
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 # html_static_path = ['_static']
+
+# for MarkdownParser
+from sphinx_markdown_parser.parser import MarkdownParser
+
+def setup(app):
+    app.add_source_suffix('.md', 'markdown')
+    app.add_source_parser(MarkdownParser)
+    app.add_config_value('markdown_parser_config', {
+        'auto_toc_tree_section': 'Content',
+        'enable_auto_doc_ref': True,
+        'enable_auto_toc_tree': True,
+        'enable_eval_rst': True,
+        'enable_inline_math': True,
+        'extensions': [
+            'extra',
+            'nl2br',
+            'sane_lists',
+            'smarty',
+            'toc',
+            'wikilinks',
+            'pymdownx.arithmatex',
+        ],
+    }, True)
+

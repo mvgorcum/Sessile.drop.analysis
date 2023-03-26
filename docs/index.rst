@@ -1,7 +1,7 @@
-sessile_drop_analysis Documentation
+Drop analysis Documentation
 -----------------------------------
 
-This is the documentation for sessile_drop_analysis.
+This is the documentation for Drop analysis.
 
 .. toctree::
    :maxdepth: 2
