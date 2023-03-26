@@ -3,6 +3,8 @@
 
 Made by Mathijs van Gorcum during his PhD at the Physics of Fluids group of the University of Twente.
 
+For the user documentation go to [drop-analysis.com](https://drop-analysis.com).
+
 Python program to analyze sessile drops by measuring contact angle, drop volume and contact line position (as function of time or framenumber).  
 This program can capture images or movies from a camera or import image sequences (in the form of an movie file, a tiffstack or a single image) and measures the contact angle, drop volume and the contact line position.  
 The program assumes an image of a drop on the surface, where the drop is dark, and the background is light.
@@ -11,7 +13,7 @@ We use a subpixel edge detection, either fast (with a linear interpolation betwe
 
 ## Screenshot
 
-![](https://github.com/mvgorcum/Sessile.drop.analysis/blob/master/Screenshot.png)
+![](Screenshot.png)
 
 ## Install and running
 This program has an installer for windows available in the [releases assets on github](https://github.com/mvgorcum/Sessile.drop.analysis/releases), or is installable from pypi.org with `pip install drop-analysis`.
