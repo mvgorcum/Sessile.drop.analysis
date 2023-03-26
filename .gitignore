@@ -4,6 +4,7 @@ Dockerfile
 buffer/
 *.build/
 *.dist/
+*.md.backup
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
