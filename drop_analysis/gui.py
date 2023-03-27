@@ -17,6 +17,8 @@ import drop_analysis.FrameSupply as FrameSupply
 from drop_analysis.settings import settings
 from drop_analysis.edge_detection import subpixel_detection as edgedetection
 from drop_analysis.edge_analysis import analysis
+from drop_analysis.Help import Ui_Help
+from drop_analysis.About import Ui_About
 
 pg.setConfigOptions(imageAxisOrder='row-major')
 
@@ -88,6 +90,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.CropRoi.addScaleHandle([0,0],[1,1])
         self.VideoWidget.addItem(self.CropRoi)
         self.VideoWidget.addItem(self.BaseLine)
+        
 
         self.BaseLine.sigRegionChanged.connect(self._updateFitHeightLine)
         self.actionOpen.triggered.connect(self.openCall)
@@ -112,6 +115,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.kInputSpinbox.valueChanged.connect(lambda: self._updateFitHeightLine('spinbox'))
 
         self.updateFrameCount.connect(lambda f,n: self.FrameCounterText.setText(f'Frame: {str(f)} / {str(n)}'))
+        
+        self.helpwidget=QtWidgets.QDialog()
+        self.helpUI=Ui_Help()
+        self.helpUI.setupUi(self.helpwidget)
+        self.aboutwidget=QtWidgets.QDialog()
+        self.aboutUI=Ui_About()
+        self.aboutUI.setupUi(self.aboutwidget)
+        self.actionHelp.triggered.connect(self.helpwidget.show)
+        self.actionAbout.triggered.connect(self.aboutwidget.show)
 
     def _updateFitHeightLine(self,kset=''):
         """This sets the amount of pixels to use for the fit, and we want the slider and the input spinbox to show the same value"""
