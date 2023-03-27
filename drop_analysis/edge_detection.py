@@ -5,6 +5,7 @@ Created on Tue Dec 20 16:20:35 2016
 """
 import numpy as np
 import scipy as sp
+from scipy.optimize import least_squares
 
 def subpixel_detection(image,thresh,mode):
     """
@@ -52,14 +53,14 @@ def errorfunc_subpixel(edgeleft,edgeright,imagerow,erffitsize):
     if (edgeleft-erffitsize)>=0  and (edgeleft-erffitsize)<=len(imagerow):
         fitparts=np.array(imagerow[range(np.int(edgeleft)-erffitsize,np.int(edgeleft)+erffitsize)]) #take out part of the image around the edge to fit the error function
         guess=(max(fitparts)-min(fitparts))/2,-.22,0,min(fitparts) #initial guess for error function
-        lstsqrsol=sp.optimize.least_squares(errorfunction,guess,args=(np.array(range(-erffitsize,erffitsize)),fitparts)) #least sqaures fit
+        lstsqrsol=least_squares(errorfunction,guess,args=(np.array(range(-erffitsize,erffitsize)),fitparts)) #least sqaures fit
         leftsubpxcorr=-lstsqrsol.x[2]/lstsqrsol.x[1] #add the subpixel correction
     else:
         leftsubpxcorr=0
     if (edgeright-erffitsize)>=0  and (edgeright+erffitsize)<len(imagerow):
         fitparts=np.array(imagerow[range(np.int(edgeright)-erffitsize,np.int(edgeright)+erffitsize)])
         guess=(max(fitparts)-min(fitparts))/2,.22,0,min(fitparts)
-        lstsqrsol=sp.optimize.least_squares(errorfunction,guess,args=(np.array(range(-erffitsize,erffitsize)),fitparts))
+        lstsqrsol=least_squares(errorfunction,guess,args=(np.array(range(-erffitsize,erffitsize)),fitparts))
         rightsubpxcorr=-lstsqrsol.x[2]/lstsqrsol.x[1]
     else:
         rightsubpxcorr=0
