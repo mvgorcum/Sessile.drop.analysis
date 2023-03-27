@@ -31,6 +31,16 @@
     </widget>
    </item>
    <item>
+    <widget class="QLabel" name="versionLabel">
+     <property name="text">
+      <string/>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QLabel" name="label_2">
      <property name="text">
       <string>This software is made by Mathijs van Gorcum and released under [GPLv3](https://codeberg.org/mvgorcum/Sessile.drop.analysis/src/branch/master/LICENSE).</string>
@@ -39,6 +49,9 @@
       <enum>Qt::MarkdownText</enum>
      </property>
      <property name="wordWrap">
+      <bool>true</bool>
+     </property>
+     <property name="openExternalLinks">
       <bool>true</bool>
      </property>
     </widget>
@@ -51,6 +64,9 @@
      <property name="textFormat">
       <enum>Qt::MarkdownText</enum>
      </property>
+     <property name="openExternalLinks">
+      <bool>true</bool>
+     </property>
     </widget>
    </item>
    <item>
@@ -60,6 +76,9 @@
      </property>
      <property name="textFormat">
       <enum>Qt::MarkdownText</enum>
+     </property>
+     <property name="openExternalLinks">
+      <bool>true</bool>
      </property>
     </widget>
    </item>
@@ -91,6 +110,9 @@ p, li { white-space: pre-wrap; }
 &lt;p align=&quot;center&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;https://github.com/uiri/toml&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;toml&lt;/span&gt;&lt;/a&gt; [MIT]&lt;/p&gt;
 &lt;p align=&quot;center&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;https://www.h5py.org/&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;h5py&lt;/span&gt;&lt;/a&gt; [BSD 3-clause]&lt;/p&gt;
 &lt;p align=&quot;center&quot; style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;a href=&quot;https://github.com/ActiveState/appdirs&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#2980b9;&quot;&gt;appdirs&lt;/span&gt;&lt;/a&gt; [MIT]&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     </property>
+     <property name="openExternalLinks">
+      <bool>true</bool>
      </property>
     </widget>
    </item>

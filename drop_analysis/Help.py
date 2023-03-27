@@ -44,6 +44,7 @@ class Ui_Help(object):
         self.label_3.setSizePolicy(sizePolicy)
         self.label_3.setTextFormat(QtCore.Qt.MarkdownText)
         self.label_3.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_3.setOpenExternalLinks(True)
         self.label_3.setObjectName("label_3")
         self.verticalLayout.addWidget(self.label_3)
         spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
