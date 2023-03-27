@@ -19,6 +19,7 @@ from drop_analysis.edge_detection import subpixel_detection as edgedetection
 from drop_analysis.edge_analysis import analysis
 from drop_analysis.Help import Ui_Help
 from drop_analysis.About import Ui_About
+from drop_analysis import version
 
 pg.setConfigOptions(imageAxisOrder='row-major')
 
@@ -122,6 +123,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.aboutwidget=QtWidgets.QDialog()
         self.aboutUI=Ui_About()
         self.aboutUI.setupUi(self.aboutwidget)
+        self.aboutUI.versionLabel.setText(f"Version: {version.__version__}")
         self.actionHelp.triggered.connect(self.helpwidget.show)
         self.actionAbout.triggered.connect(self.aboutwidget.show)
 
