@@ -20,6 +20,7 @@ from drop_analysis.edge_analysis import analysis
 from drop_analysis.Help import Ui_Help
 from drop_analysis.About import Ui_About
 from drop_analysis import version
+from drop_analysis.Mainwindow import Ui_MainWindow
 
 pg.setConfigOptions(imageAxisOrder='row-major')
 
@@ -30,7 +31,7 @@ filetypemap={'image/tiff':FrameSupply.ImageReader,'image/jpeg':FrameSupply.Image
              'video/x-msvideo':FrameSupply.OpencvReadVideo,'video/mp4':FrameSupply.OpencvReadVideo,'video/avi':FrameSupply.OpencvReadVideo,
              'application/x-hdf':FrameSupply.Hdf5Reader}
 
-class MainWindow(QtWidgets.QMainWindow):
+class MainWindow(QtWidgets.QMainWindow,Ui_MainWindow):
     updateVideo = pyqtSignal(np.ndarray)
     updateLeftEdge = pyqtSignal(np.ndarray,np.ndarray)
     updateRightEdge = pyqtSignal(np.ndarray,np.ndarray)
@@ -46,7 +47,7 @@ class MainWindow(QtWidgets.QMainWindow):
         Initialize the main window, set up all plots, and connect to defined buttons.
         """
         super(MainWindow, self).__init__(*args, **kwargs)
-        uic.loadUi(resource_filename('drop_analysis', 'Mainwindow.ui'), self)
+        self.setupUi(self)
         self.setWindowIcon(QtGui.QIcon(resource_filename('drop_analysis.data', 'icon.ico')))
         self.setWindowTitle('Drop Analysis')
 
