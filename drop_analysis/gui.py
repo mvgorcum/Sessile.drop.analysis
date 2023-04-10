@@ -92,7 +92,7 @@ class MainWindow(QtWidgets.QMainWindow,Ui_MainWindow):
         self.CropRoi.addScaleHandle([0,0],[1,1])
         self.VideoWidget.addItem(self.CropRoi)
         self.VideoWidget.addItem(self.BaseLine)
-        
+        self.defaultCropBase=True
 
         self.BaseLine.sigRegionChanged.connect(self._updateFitHeightLine)
         self.actionOpen.triggered.connect(self.openCall)
@@ -175,10 +175,12 @@ class MainWindow(QtWidgets.QMainWindow,Ui_MainWindow):
         else:
             self.FrameSource=filetypemap[mimetype](VideoFile)
             self.FrameSource.start()
-            FrameWidth,FrameHeight=self.FrameSource.getframesize()
-            self.CropRoi.setPos([FrameWidth*.1,FrameHeight*.1])
-            self.CropRoi.setSize([FrameWidth*.8,FrameHeight*.8])
-            self.BaseLine.setPos([FrameWidth*.2,FrameHeight*.7])
+            if self.defaultCropBase:
+                FrameWidth,FrameHeight=self.FrameSource.getframesize()
+                self.CropRoi.setPos([FrameWidth*.1,FrameHeight*.1])
+                self.CropRoi.setSize([FrameWidth*.8,FrameHeight*.8])
+                self.BaseLine.setPos([FrameWidth*.2,FrameHeight*.7])
+                self.defaultCropBase=False
             firstframe,_=self.FrameSource.getfirstframe()
             self.VideoItem.setImage(firstframe,autoRange=True)
 
@@ -211,10 +213,12 @@ class MainWindow(QtWidgets.QMainWindow,Ui_MainWindow):
             self.FrameSource.setResolution(self.settings.config['opencvcamera']['resolution'])
             self.FrameSource.setFramerate(self.settings.config['opencvcamera']['framerate'])
             self.FrameSource.start()
-            FrameWidth,FrameHeight=self.FrameSource.getframesize()
-            self.CropRoi.setPos([FrameWidth*.1,FrameHeight*.1])
-            self.CropRoi.setSize([FrameWidth*.8,FrameHeight*.8])
-            self.BaseLine.setPos([FrameWidth*.2,FrameHeight*.7])
+            if self.defaultCropBase:
+                FrameWidth,FrameHeight=self.FrameSource.getframesize()
+                self.CropRoi.setPos([FrameWidth*.1,FrameHeight*.1])
+                self.CropRoi.setSize([FrameWidth*.8,FrameHeight*.8])
+                self.BaseLine.setPos([FrameWidth*.2,FrameHeight*.7])
+                self.defaultCropBase=False
             CameraThread = threading.Thread(target=self.CameraCapture)
             CameraThread.start()
             self.MeasurementResult=pd.DataFrame(columns=['thetaleft', 'thetaright', 'contactpointleftx','contactpointlefty','contactpointrightx','contactpointrighty','volume','centroidx','centroidy','time'])
