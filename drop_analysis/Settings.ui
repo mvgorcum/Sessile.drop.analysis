@@ -13,271 +13,175 @@
   <property name="windowTitle">
    <string>Settings</string>
   </property>
-  <widget class="QDialogButtonBox" name="okcancelbuttons">
-   <property name="geometry">
-    <rect>
-     <x>260</x>
-     <y>410</y>
-     <width>341</width>
-     <height>32</height>
-    </rect>
-   </property>
-   <property name="orientation">
-    <enum>Qt::Horizontal</enum>
-   </property>
-   <property name="standardButtons">
-    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-   </property>
-  </widget>
-  <widget class="QTabWidget" name="tabWidget">
-   <property name="geometry">
-    <rect>
-     <x>0</x>
-     <y>20</y>
-     <width>611</width>
-     <height>391</height>
-    </rect>
-   </property>
-   <property name="currentIndex">
-    <number>1</number>
-   </property>
-   <widget class="QWidget" name="edgedetection">
-    <attribute name="title">
-     <string>Edge Detection</string>
-    </attribute>
-    <widget class="QComboBox" name="subpixelmethod">
-     <property name="geometry">
-      <rect>
-       <x>140</x>
-       <y>20</y>
-       <width>171</width>
-       <height>32</height>
-      </rect>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <item>
+    <widget class="QTabWidget" name="tabWidget">
+     <property name="currentIndex">
+      <number>1</number>
      </property>
-     <property name="toolTip">
-      <string>Select subpixel edge detection method</string>
+     <widget class="QWidget" name="edgedetection">
+      <attribute name="title">
+       <string>Edge Detection</string>
+      </attribute>
+      <layout class="QFormLayout" name="formLayout">
+       <item row="0" column="0">
+        <widget class="QLabel" name="subpixellabel">
+         <property name="text">
+          <string>Subpixel method:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QComboBox" name="subpixelmethod">
+         <property name="toolTip">
+          <string>Select subpixel edge detection method</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="opencvcamera">
+      <attribute name="title">
+       <string>Opencv Camera</string>
+      </attribute>
+      <layout class="QFormLayout" name="formLayout_2">
+       <item row="0" column="0">
+        <widget class="QLabel" name="frameratelabel">
+         <property name="text">
+          <string>Framerate:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <layout class="QHBoxLayout" name="FramerateLayout">
+         <item>
+          <widget class="QDoubleSpinBox" name="framerate">
+           <property name="value">
+            <double>30.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="tryframerate">
+           <property name="text">
+            <string>Try framerate</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="resolutionlabel">
+         <property name="text">
+          <string>Resolution:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <layout class="QHBoxLayout" name="ResulutionLayout">
+         <item>
+          <widget class="QComboBox" name="chooseresolution"/>
+         </item>
+         <item>
+          <widget class="QPushButton" name="autodetectresolution">
+           <property name="text">
+            <string>Autodetect</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="resolutionlabel_2">
+         <property name="text">
+          <string>Buffer Path:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <layout class="QHBoxLayout" name="BufferpathLayout">
+         <item>
+          <widget class="QLineEdit" name="BufferPathDisplay">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="ChangeBufferPath">
+           <property name="text">
+            <string>Change Path</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="sessiledrop">
+      <attribute name="title">
+       <string>Sessile Drops</string>
+      </attribute>
+      <layout class="QFormLayout" name="formLayout_3">
+       <item row="0" column="0">
+        <widget class="QLabel" name="heightlabel">
+         <property name="text">
+          <string>Default height:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QSpinBox" name="defaultfitheight">
+         <property name="maximum">
+          <number>10000</number>
+         </property>
+         <property name="value">
+          <number>40</number>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="fittypelabel">
+         <property name="text">
+          <string>Fit type:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <layout class="QHBoxLayout" name="FittypeLayout">
+         <item>
+          <widget class="QComboBox" name="fittype"/>
+         </item>
+         <item>
+          <widget class="QLabel" name="polyfitorderlabel">
+           <property name="text">
+            <string>Order:</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QSpinBox" name="polyfitorder"/>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item>
+    <widget class="QDialogButtonBox" name="okcancelbuttons">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
      </property>
-     <property name="minimumContentsLength">
-      <number>0</number>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
      </property>
     </widget>
-    <widget class="QLabel" name="subpixellabel">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>30</y>
-       <width>111</width>
-       <height>18</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Subpixel method:</string>
-     </property>
-    </widget>
-   </widget>
-   <widget class="QWidget" name="opencvcamera">
-    <attribute name="title">
-     <string>Opencv Camera</string>
-    </attribute>
-    <widget class="QLabel" name="frameratelabel">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>30</y>
-       <width>101</width>
-       <height>20</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Framerate:</string>
-     </property>
-    </widget>
-    <widget class="QLabel" name="resolutionlabel">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>80</y>
-       <width>101</width>
-       <height>20</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Resolution:</string>
-     </property>
-    </widget>
-    <widget class="QDoubleSpinBox" name="framerate">
-     <property name="geometry">
-      <rect>
-       <x>140</x>
-       <y>20</y>
-       <width>81</width>
-       <height>32</height>
-      </rect>
-     </property>
-     <property name="value">
-      <double>30.000000000000000</double>
-     </property>
-    </widget>
-    <widget class="QComboBox" name="chooseresolution">
-     <property name="geometry">
-      <rect>
-       <x>140</x>
-       <y>70</y>
-       <width>141</width>
-       <height>32</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="autodetectresolution">
-     <property name="geometry">
-      <rect>
-       <x>290</x>
-       <y>69</y>
-       <width>88</width>
-       <height>34</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Autodetect</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="tryframerate">
-     <property name="geometry">
-      <rect>
-       <x>230</x>
-       <y>19</y>
-       <width>101</width>
-       <height>34</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Try framerate</string>
-     </property>
-    </widget>
-    <widget class="QLabel" name="resolutionlabel_2">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>130</y>
-       <width>101</width>
-       <height>20</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Buffer Path:</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="ChangeBufferPath">
-     <property name="geometry">
-      <rect>
-       <x>330</x>
-       <y>118</y>
-       <width>94</width>
-       <height>36</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Change Path</string>
-     </property>
-    </widget>
-    <widget class="QTextEdit" name="BufferPathDisplay">
-     <property name="geometry">
-      <rect>
-       <x>140</x>
-       <y>120</y>
-       <width>181</width>
-       <height>31</height>
-      </rect>
-     </property>
-     <property name="readOnly">
-      <bool>true</bool>
-     </property>
-     <property name="acceptRichText">
-      <bool>false</bool>
-     </property>
-    </widget>
-   </widget>
-   <widget class="QWidget" name="sessiledrop">
-    <attribute name="title">
-     <string>Sessile Drops</string>
-    </attribute>
-    <widget class="QLabel" name="heightlabel">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>30</y>
-       <width>101</width>
-       <height>20</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Default height:</string>
-     </property>
-    </widget>
-    <widget class="QLabel" name="fittypelabel">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>80</y>
-       <width>101</width>
-       <height>20</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Fit type:</string>
-     </property>
-    </widget>
-    <widget class="QSpinBox" name="defaultfitheight">
-     <property name="geometry">
-      <rect>
-       <x>140</x>
-       <y>20</y>
-       <width>81</width>
-       <height>32</height>
-      </rect>
-     </property>
-     <property name="maximum">
-      <number>10000</number>
-     </property>
-     <property name="value">
-      <number>40</number>
-     </property>
-    </widget>
-    <widget class="QComboBox" name="fittype">
-     <property name="geometry">
-      <rect>
-       <x>140</x>
-       <y>70</y>
-       <width>141</width>
-       <height>32</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QSpinBox" name="polyfitorder">
-     <property name="geometry">
-      <rect>
-       <x>370</x>
-       <y>70</y>
-       <width>81</width>
-       <height>32</height>
-      </rect>
-     </property>
-    </widget>
-    <widget class="QLabel" name="polyfitorderlabel">
-     <property name="geometry">
-      <rect>
-       <x>310</x>
-       <y>79</y>
-       <width>61</width>
-       <height>20</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Order:</string>
-     </property>
-    </widget>
-   </widget>
-  </widget>
+   </item>
+  </layout>
  </widget>
  <resources/>
  <connections>
