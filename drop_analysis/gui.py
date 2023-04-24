@@ -207,8 +207,7 @@ class MainWindow(QtWidgets.QMainWindow,Ui_MainWindow):
             if bufferpath.exists():
                 bufferpath.unlink()
             self.VidRecordButton.show()
-            self.FrameSource=FrameSupply.OpencvCamera()
-            self.FrameSource.bufferpath=bufferpath
+            self.FrameSource=FrameSupply.OpencvCamera(bufferpath)
             sleep(0.1)
             self.FrameSource.setResolution(self.settings.config['opencvcamera']['resolution'])
             self.FrameSource.setFramerate(self.settings.config['opencvcamera']['framerate'])

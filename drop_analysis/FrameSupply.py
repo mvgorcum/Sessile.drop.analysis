@@ -182,7 +182,7 @@ class OpencvCamera(FrameSupply):
     Camera operated using OpenCV
     """
 
-    def __init__(self):
+    def __init__(self,bufferpath):
         super().__init__()
         self.framecaptime = []
         self.imaging_thread = []
@@ -192,7 +192,7 @@ class OpencvCamera(FrameSupply):
         self.resolution=[]
         self.cap = cv2.VideoCapture(0)
         self.record = False
-        self.bufferpath='buffer/buffer.h5'
+        self.bufferpath=bufferpath
         recFrameCount=0
 
 

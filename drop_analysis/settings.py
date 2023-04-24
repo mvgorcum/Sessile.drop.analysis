@@ -1,14 +1,16 @@
 import toml
 from PyQt5 import QtWidgets, uic, QtGui
+from drop_analysis.settingsui import Ui_SettingsDialog
 import os
 from pathlib import Path
 from pkg_resources import resource_filename
 import appdirs
 
-class settings(QtWidgets.QDialog):
+class settings(QtWidgets.QDialog,Ui_SettingsDialog):
     def __init__(self, parent=None):
         super(settings, self).__init__(parent)
-        uic.loadUi(resource_filename('drop_analysis', 'Settings.ui'), self)
+        self.setupUi(self)
+        #uic.loadUi(resource_filename('drop_analysis', 'Settings.ui'), self)
         self.appname='drop_analysis'
         self.appauthor = "mvgorcum"
         self.configpath=Path(appdirs.user_config_dir(self.appname))
@@ -17,8 +19,9 @@ class settings(QtWidgets.QDialog):
             userconfig=toml.load(self.configpath.joinpath('config.toml'))
         else:
             userconfig={}
+        defaultCacheDir=Path(appdirs.user_cache_dir(self.appname, self.appauthor)) / 'buffer.h5'
+        self.defaultconfig['opencvcamera']['bufferpath']=str(defaultCacheDir)
         self.config={**defaultconfig,**userconfig}
-        self.config['opencvcamera']['bufferpath']=appdirs.user_cache_dir(self.appname, self.appauthor)
         self.okcancelbuttons.accepted.connect(self._saveconfig)
         self.autodetectresolution.clicked.connect(self._detectres)
         self.fittype.activated[str].connect(self._showhidepolyorder)
@@ -79,7 +82,7 @@ class settings(QtWidgets.QDialog):
     def _saveconfig(self):
         self.config['opencvcamera']['framerate']=self.framerate.value()
         self.config['opencvcamera']['resolution']=self.chooseresolution.currentData()
-        self.config['opencvcamera']['bufferpath']=self.BufferPathDisplay.toPlainText()
+        self.config['opencvcamera']['bufferpath']=self.BufferPathDisplay.text()
         self.config['edgedetection']['subpixelscheme']=self.subpixelmethod.currentData()
         self.config['sessiledrop']['fittype']=self.fittype.currentData()
         self.config['sessiledrop']['polyfitorder']=self.polyfitorder.value()
