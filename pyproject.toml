@@ -5,3 +5,26 @@ requires = ["setuptools",
             "wheel"]
 
 build-backend = 'setuptools.build_meta'
+
+[project]
+name = "drop-analysis"
+description = "A program to capture and analyze images of droplets."
+readme = "README.md"
+requires-python = ">=3.8"
+dynamic = ["version"]
+
+[[project.authors]]
+name = "Mathijs van Gorcum"
+email = "dropanalysis@vgorcum.com"
+
+
+[project.license]
+file = "LICENSE"
+
+
+[project.urls]
+'Homepage' =  'https://drop-analysis.com'
+'Documentation' = 'https://drop-analysis.com/usage.html'
+'Source Code' = 'https://codeberg.org/mvgorcum/Sessile.drop.analysis'
+'Issue Tracker' = 'https://codeberg.org/mvgorcum/Sessile.drop.analysis/issues'
+
