@@ -11,13 +11,13 @@ def subpixel_detection(image,thresh,mode):
     """
     edge detection, allowing for two subpixel detection methods
     """
-    erffitsize=np.int(40)
+    erffitsize=int(40)
     framesize=image.shape
     edgeleft=np.zeros(framesize[0])
     edgeright=np.zeros(framesize[0])
     for y in range(framesize[0]-1): #edge detection, go line by line on horizontal
         edgeleft[y]=np.argmax(image[y,0:framesize[1]]<thresh) #edge detection on pixel scale
-        edgeright[y]=np.int(framesize[1]-np.argmax(image[y,range(framesize[1]-1,0,-1)]<thresh))
+        edgeright[y]=int(framesize[1]-np.argmax(image[y,range(framesize[1]-1,0,-1)]<thresh))
         if mode == 'Linear':
             leftsubpxcorr,rightsubpxcorr=linear_subpixel(edgeleft[y],edgeright[y],image[y,:],thresh)
         elif mode == 'Errorfunction':
@@ -35,11 +35,11 @@ def linear_subpixel(edgeleft,edgeright,imagerow,thresh):
     """
     if edgeleft!=0:
         #subpixel correction with using corr=(threshold-intensity(edge-1))/(intensity(edge)-intensity(edge-1))
-        leftsubpxcorr=(thresh-np.float64(imagerow[np.int(edgeleft-1)]))/(np.float64(imagerow[np.int(edgeleft)])-np.float64(imagerow[np.int(edgeleft-1)]))-1 
+        leftsubpxcorr=(thresh-np.float64(imagerow[int(edgeleft-1)]))/(np.float64(imagerow[int(edgeleft)])-np.float64(imagerow[int(edgeleft-1)]))-1 
     else:
         leftsubpxcorr=0
     if edgeright!=len(imagerow):
-        rightsubpxcorr=(thresh-np.float64(imagerow[np.int(edgeright-1)]))/(np.float64(imagerow[np.int(edgeright)])-np.float64(imagerow[np.int(edgeright-1)]))-1
+        rightsubpxcorr=(thresh-np.float64(imagerow[int(edgeright-1)]))/(np.float64(imagerow[int(edgeright)])-np.float64(imagerow[int(edgeright-1)]))-1
     else:
         rightsubpxcorr=0
     return leftsubpxcorr,rightsubpxcorr
@@ -51,14 +51,14 @@ def errorfunc_subpixel(edgeleft,edgeright,imagerow,erffitsize):
     def errorfunction(x,xdata,y): #define errorfunction to fit with a least squares fit.
         return x[0]*(1+sp.special.erf(xdata*x[1]+x[2]))+x[3] - y
     if (edgeleft-erffitsize)>=0  and (edgeleft-erffitsize)<=len(imagerow):
-        fitparts=np.array(imagerow[range(np.int(edgeleft)-erffitsize,np.int(edgeleft)+erffitsize)]) #take out part of the image around the edge to fit the error function
+        fitparts=np.array(imagerow[range(int(edgeleft)-erffitsize,int(edgeleft)+erffitsize)]) #take out part of the image around the edge to fit the error function
         guess=(max(fitparts)-min(fitparts))/2,-.22,0,min(fitparts) #initial guess for error function
         lstsqrsol=least_squares(errorfunction,guess,args=(np.array(range(-erffitsize,erffitsize)),fitparts)) #least sqaures fit
         leftsubpxcorr=-lstsqrsol.x[2]/lstsqrsol.x[1] #add the subpixel correction
     else:
         leftsubpxcorr=0
     if (edgeright-erffitsize)>=0  and (edgeright+erffitsize)<len(imagerow):
-        fitparts=np.array(imagerow[range(np.int(edgeright)-erffitsize,np.int(edgeright)+erffitsize)])
+        fitparts=np.array(imagerow[range(int(edgeright)-erffitsize,int(edgeright)+erffitsize)])
         guess=(max(fitparts)-min(fitparts))/2,.22,0,min(fitparts)
         lstsqrsol=least_squares(errorfunction,guess,args=(np.array(range(-erffitsize,erffitsize)),fitparts))
         rightsubpxcorr=-lstsqrsol.x[2]/lstsqrsol.x[1]

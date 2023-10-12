@@ -10,18 +10,18 @@ def analysis(edgeleft,edgeright,baseinput,framesize,k=100,PO=3,fittype='Polyfit'
     """
     import numpy as np
 
-    #use shapely linestrings to find the intersectionpoints between the edges and baseline
+    #use shapely linestrings to find the intersection points between the edges and baseline
     baseline=LineString(baseinput) 
     rightline=LineString(np.column_stack((edgeright,(range(0,framesize[0]))))) 
     leftline=LineString(np.column_stack((edgeleft,(range(0,framesize[0])))))
     leftcontact=baseline.intersection(leftline)
     rightcontact=baseline.intersection(rightline)
-    fitpointsleft=edgeleft[range(np.int(np.floor(leftcontact.y)),np.int(np.floor(leftcontact.y)-k),-1)]
+    fitpointsleft=edgeleft[range(int(np.floor(leftcontact.y)),int(np.floor(leftcontact.y)-k),-1)]
     
     #if no edge was detected the value is set to 0 (ie. the edge of the image) so discard all these points
     if any(fitpointsleft==0):
         fitpointsleft=np.delete(fitpointsleft,range(np.argmax(fitpointsleft==0),k))
-    fitpointsright=edgeright[range(np.int(np.floor(rightcontact.y)),np.int(np.floor(rightcontact.y)-k),-1)]
+    fitpointsright=edgeright[range(int(np.floor(rightcontact.y)),int(np.floor(rightcontact.y)-k),-1)]
     if any(fitpointsright==0):
         fitpointsright=np.delete(fitpointsright,range(np.argmax(fitpointsright==0),k))
     
@@ -46,20 +46,20 @@ def volumecalc(leftcontact,rightcontact,edgeleft,edgeright):
     """
     import numpy as np
     dropvolume=0
-    for height in range (0,min(np.int(np.floor(leftcontact.y)),np.int(np.floor(rightcontact.y)))):
+    for height in range (0,min(int(np.floor(leftcontact.y)),int(np.floor(rightcontact.y)))):
         dropvolume=dropvolume+np.pi*np.square((edgeright[height]-edgeleft[height])/2)
     #using cylindrical slice we calculate the remaining volume
     slantedbasediff=max(np.floor(leftcontact.y),np.floor(rightcontact.y))-min(np.floor(leftcontact.y),np.floor(rightcontact.y))
     #we assume that the radius is constant over the range of the slanted baseline, for small angles this is probably accurate, but for larger angles this can result in a significant error.
-    baseradius=(edgeright[np.int(min(np.floor(leftcontact.y),np.floor(rightcontact.y)))]-edgeleft[np.int(min(np.floor(leftcontact.y),np.floor(rightcontact.y)))])/2
+    baseradius=(edgeright[int(min(np.floor(leftcontact.y),np.floor(rightcontact.y)))]-edgeleft[int(min(np.floor(leftcontact.y),np.floor(rightcontact.y)))])/2
     dropvolume=dropvolume+.5*np.pi*np.square(baseradius)*slantedbasediff
     return dropvolume
 
 def centerofgravitycalc(leftcontact,rightcontact,edgeleft,edgeright):
-    yvarleft =np.append(leftcontact.y,range(np.int(np.floor(leftcontact.y)),0,-1))
-    yvarright=np.append(rightcontact.y,range(np.int(np.floor(rightcontact.y)),0,-1))
-    edgerightadd=np.append(rightcontact.x,edgeright[range(np.int(np.floor(rightcontact.y)),0,-1)])
-    edgeleftadd=np.append(leftcontact.x,edgeleft[range(np.int(np.floor(leftcontact.y)),0,-1)])
+    yvarleft =np.append(leftcontact.y,range(int(np.floor(leftcontact.y)),0,-1))
+    yvarright=np.append(rightcontact.y,range(int(np.floor(rightcontact.y)),0,-1))
+    edgerightadd=np.append(rightcontact.x,edgeright[range(int(np.floor(rightcontact.y)),0,-1)])
+    edgeleftadd=np.append(leftcontact.x,edgeleft[range(int(np.floor(leftcontact.y)),0,-1)])
     totaledge=np.append(edgeleftadd,np.flip(edgerightadd))
     totalyvar=np.append(yvarleft,np.flip(yvarright))
     edgexy=np.column_stack((totaledge,totalyvar))
@@ -107,8 +107,8 @@ def analysellipse(fitpointsleft,fitpointsright,leftcontact,rightcontact,baseinpu
     from ellipse import LsqEllipse
     from shapely.geometry import LineString
     import numpy as np
-    yvarleft=range(np.int(np.floor(leftcontact.y)),np.int(np.floor(leftcontact.y)-k),-1)
-    yvarright=range(np.int(np.floor(rightcontact.y)),np.int(np.floor(rightcontact.y)-k),-1)
+    yvarleft=range(int(np.floor(leftcontact.y)),int(np.floor(leftcontact.y)-k),-1)
+    yvarright=range(int(np.floor(rightcontact.y)),int(np.floor(rightcontact.y)-k),-1)
     edge=np.append(fitpointsleft,fitpointsright)
     yvart=np.append(yvarleft,yvarright)
     totalfitpoints=np.array(list(zip(edge, yvart)))
@@ -117,7 +117,7 @@ def analysellipse(fitpointsleft,fitpointsright,leftcontact,rightcontact,baseinpu
 
     #pointsfitted=reg.return_fit(1000)
     a,b,c,d,e,f=reg.coefficients
-    y=np.linspace(min(np.int(np.floor(leftcontact.y)),np.int(np.floor(rightcontact.y)))-k,max(np.int(np.floor(leftcontact.y)),np.int(np.floor(rightcontact.y)))+k,framesize[0]*10)
+    y=np.linspace(min(int(np.floor(leftcontact.y)),int(np.floor(rightcontact.y)))-k,max(int(np.floor(leftcontact.y)),int(np.floor(rightcontact.y)))+k,framesize[0]*10)
     
     #split ellipse in two parts with a vertical cut, to find the contact points
     #xellipse1&2 are just the function for ellipse solved for x(y)
