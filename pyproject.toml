@@ -1,26 +1,44 @@
 [build-system]
-
 requires = ["setuptools",
             "setuptools_scm",
             "wheel"]
-
 build-backend = 'setuptools.build_meta'
 
 [project]
-name = "drop-analysis"
+name = "drop_analysis"
 description = "A program to capture and analyze images of droplets."
 readme = "README.md"
 requires-python = ">=3.8"
 dynamic = ["version"]
+authors = [{name = "Mathijs van Gorcum", email = "dropanalysis@vgorcum.com"}]
+  
+dependencies = [
+  "numpy",
+  "pandas",
+  "scipy",
+  "pyqt5",
+  "opencv-python-headless",
+  "openpyxl",
+  "fast-histogram",
+  "lsq-ellipse",
+  "imageio",
+  "shapely",
+  "pyqtgraph>=0.11.0",
+  "toml",
+  "h5py",
+  "appdirs"]
 
-[[project.authors]]
-name = "Mathijs van Gorcum"
-email = "dropanalysis@vgorcum.com"
+[tool.setuptools.package-data]
+drop_analysis = ["data/*"]
 
+[project.gui-scripts]
+drop_analysis = "drop_analysis.__main__:main"
+
+[project.scripts]
+drop_analysis-cli = "drop_analysis.__main__:main"
 
 [project.license]
 file = "LICENSE"
-
 
 [project.urls]
 'Homepage' =  'https://drop-analysis.com'

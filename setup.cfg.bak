@@ -1,0 +1,82 @@
+[metadata]
+name = drop_analysis
+author = Mathijs van Gorcum
+author_email = dropanalysis@vgorcum.com
+license = GNU GPL v3+
+license_file = LICENSE
+url = https://drop-analysis.com
+
+description = A program to capture and analyze images of droplets
+long_description = file: README.md
+description_content_type = text/markdown
+
+[options]
+zip_safe = False
+packages = find:
+python_requires = >=3.8
+include_package_data = True
+setup_requires = setuptools_scm
+install_requires = 
+  numpy
+  pandas
+  scipy
+  pyqt5
+  opencv-python-headless
+  openpyxl
+  fast-histogram
+  lsq-ellipse
+  imageio
+  shapely
+  pyqtgraph >=0.11.0
+  toml
+  h5py
+  appdirs
+
+[options.extras_require]
+test =
+    pytest
+
+[options.entry_points]
+console_scripts =
+    drop_analysis = drop_analysis.__main__:main
+
+[options.package_data]
+drop_analysis = data/*
+
+[tool:pytest]
+testpaths = "drop_analysis"
+doctest_plus = enabled
+text_file_format = rst
+
+[coverage:run]
+omit =
+  drop_analysis/__init*
+  drop_analysis/conftest.py
+  drop_analysis/*setup_package*
+  drop_analysis/tests/*
+  drop_analysis/*/tests/*
+  drop_analysis/extern/*
+  drop_analysis/version*
+  */drop_analysis/__init*
+  */drop_analysis/conftest.py
+  */drop_analysis/*setup_package*
+  */drop_analysis/tests/*
+  */drop_analysis/*/tests/*
+  */drop_analysis/extern/*
+  */drop_analysis/version*
+
+[coverage:report]
+exclude_lines =
+  # Have to re-enable the standard pragma
+  pragma: no cover
+  # Don't complain about packages we have installed
+  except ImportError
+  # Don't complain if tests don't hit assertions
+  raise AssertionError
+  raise NotImplementedError
+  # Don't complain about script hooks
+  def main\(.*\):
+  # Ignore branches that don't pertain to this version of Python
+  pragma: py{ignore_python_version}
+  # Don't complain about IPython completion helper
+  def _ipython_key_completions_
