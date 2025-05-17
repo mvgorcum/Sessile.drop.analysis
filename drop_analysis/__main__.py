@@ -11,3 +11,5 @@ def main():
 
     main.show()
     sys.exit(app.exec_())
+
+main()
